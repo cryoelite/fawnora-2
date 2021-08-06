@@ -1,0 +1,4 @@
+enum StartStopButtonEnum {
+  PLAY,
+  STOP,
+}

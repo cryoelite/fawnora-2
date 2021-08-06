@@ -7,4 +7,7 @@ class HindiLocaleConstraints extends LocaleConstraints {
   String get login => 'साइन इन';
   String get signUp => 'साइन अप';
   String get forgotPassword => 'पासवर्ड बदलें';
+  String get compassTitle => 'कम्पास';
+  String get homeTitle => 'जीटीएफ';
+  String get submissionsTitle => 'प्रविष्टियों';
 }

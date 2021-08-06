@@ -8,18 +8,18 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:502918967405:android:11101ef7ef92fb266c4f64",
+        "mobilesdk_app_id": "1:502918967405:android:dd0402864acb12d56c4f64",
         "android_client_info": {
           "package_name": "go.cryoelite.fawnora"
         }
       },
       "oauth_client": [
         {
-          "client_id": "502918967405-m7jn4kltdtlvgd8jp1l0gjd26oku2af4.apps.googleusercontent.com",
+          "client_id": "502918967405-6s8rv67o5np9skmhkoi0tbp5ihkmffmm.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "go.cryoelite.fawnora",
-            "certificate_hash": "7b823d548759a671fd141d72fec8a8849535fbf9"
+            "certificate_hash": "1866ada4347fabaa205b5814e25fc74bffb55cac"
           }
         },
         {

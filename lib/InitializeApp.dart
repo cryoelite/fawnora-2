@@ -1,8 +1,11 @@
+import 'package:fawnora/constants/AppColors.dart';
+import 'package:fawnora/constants/SystemOverlayOverrides.dart';
 import 'package:fawnora/models/LocaleTypeEnum.dart';
 import 'package:fawnora/locale/LocaleConfig.dart';
 import 'package:fawnora/services/LocalStorageService.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:devicelocale/devicelocale.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -24,7 +27,8 @@ class InitializeApp {
       print("yoasd");
       await setLocalStorageLanguage(deviceLanguage);
     }
-
+    _portraitModeOnly();
+    _setSystemTheme();
     runApp(
       ProviderScope(
         child: mainApp,
@@ -35,6 +39,18 @@ class InitializeApp {
         ],
       ),
     );
+  }
+
+  void _setSystemTheme() {
+    final systemTheme = SystemOverlayOverrides.systemOverlayOverrides;
+    SystemChrome.setSystemUIOverlayStyle(systemTheme);
+  }
+
+  void _portraitModeOnly() {
+    SystemChrome.setPreferredOrientations(<DeviceOrientation>[
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
   }
 
   Future<void> initLocalStorage() async {
