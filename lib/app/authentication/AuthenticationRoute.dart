@@ -9,6 +9,7 @@ class AuthenticationRoute extends StatefulWidget {
   _AuthenticationRouteState createState() => _AuthenticationRouteState();
 }
 
+//TODO: Loading animation for sign in and up.
 class _AuthenticationRouteState extends State<AuthenticationRoute> {
   @override
   Widget build(BuildContext context) {

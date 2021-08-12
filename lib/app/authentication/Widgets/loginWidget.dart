@@ -1,4 +1,5 @@
 import 'package:fawnora/app/authentication/viewmodels/authViewModel.dart';
+import 'package:fawnora/common_widgets/AuthProgressIndicator.dart';
 import 'package:fawnora/common_widgets/CustomTextField.dart';
 import 'package:fawnora/constants/AppColors.dart';
 import 'package:fawnora/constants/AppRoutes.dart';
@@ -11,7 +12,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-class LoginWidget extends ConsumerWidget {
+class LoginWidget extends StatelessWidget {
   LoginWidget({Key? key}) : super(key: key);
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -22,17 +23,19 @@ class LoginWidget extends ConsumerWidget {
         .pushNamedAndRemoveUntil(AppRoutes.signUpRoute, (_) => false);
   }
 
-  Future<void> signIn(BuildContext context, ScopedReader watch) async {
-    final watchAuth = watch(authenticationViewModelProvider.notifier);
-    await watchAuth.signIn(_usernameController.text, _passwordController.text);
-    if (watchAuth.currentState == AuthEnum.SUCCESS)
-      Navigator.of(context)
-          .pushNamedAndRemoveUntil(AppRoutes.homeRoute, (_) => false);
+  Future<void> signIn(BuildContext context) async {
+    if (context.read(authenticationViewModelProvider) != AuthEnum.LOADING) {
+      final watchAuth = context.read(authenticationViewModelProvider.notifier);
+      await watchAuth.signIn(
+          _usernameController.text, _passwordController.text);
+      if (watchAuth.currentState == AuthEnum.SUCCESS)
+        Navigator.of(context)
+            .pushNamedAndRemoveUntil(AppRoutes.homeRoute, (_) => false);
+    }
   }
 
   @override
-  Widget build(BuildContext context, ScopedReader watch) {
-    final watchAuth = watch(authenticationViewModelProvider.notifier);
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.color2,
       body: SafeArea(
@@ -58,36 +61,41 @@ class LoginWidget extends ConsumerWidget {
             Positioned(
               top: ScreenConstraintService(context).minHeight * 21,
               left: ScreenConstraintService(context).minWidth * 7,
-              child: Column(
-                children: [
-                  CustomTextField(
-                    _usernameController,
-                    TextInputType.phone,
-                    [
-                      FilteringTextInputFormatter.digitsOnly,
-                      LengthLimitingTextInputFormatter(10),
-                    ],
-                    [
-                      AutofillHints.telephoneNumber,
-                    ],
-                    "Phone Number",
-                    errorText:
-                        watchAuth.validateUsername(_usernameController.text),
-                  ),
-                  CustomTextField(
-                    _passwordController,
-                    TextInputType.visiblePassword,
-                    [
-                      FilteringTextInputFormatter.singleLineFormatter,
-                    ],
-                    [
-                      AutofillHints.password,
-                    ],
-                    "Password",
-                    obscure: true,
-                  ),
-                ],
-              ),
+              child: Consumer(builder: (context, watch, _) {
+                final watchLocale = watch(localeProvider);
+
+                return Column(
+                  children: [
+                    CustomTextField(
+                      _usernameController,
+                      TextInputType.phone,
+                      [
+                        FilteringTextInputFormatter.digitsOnly,
+                        LengthLimitingTextInputFormatter(10),
+                      ],
+                      [
+                        AutofillHints.telephoneNumber,
+                      ],
+                      watchLocale.localeObject.phoneNumber,
+                      errorText: context
+                          .read(authenticationViewModelProvider.notifier)
+                          .validateUsername(_usernameController.text),
+                    ),
+                    CustomTextField(
+                      _passwordController,
+                      TextInputType.visiblePassword,
+                      [
+                        FilteringTextInputFormatter.singleLineFormatter,
+                      ],
+                      [
+                        AutofillHints.password,
+                      ],
+                      watchLocale.localeObject.password,
+                      obscure: true,
+                    ),
+                  ],
+                );
+              }),
             ),
             Positioned(
               top: ScreenConstraintService(context).minHeight * 31.5,
@@ -118,10 +126,7 @@ class LoginWidget extends ConsumerWidget {
                             );
                           },
                         ),
-                        Container(
-                          width: ScreenConstraintService(context).minWidth * 9,
-                          height:
-                              ScreenConstraintService(context).minHeight * 5,
+                        AuthProgressIndicator(
                           child: IconButton(
                             iconSize: 24,
                             splashRadius: 24,
@@ -129,21 +134,23 @@ class LoginWidget extends ConsumerWidget {
                               ImageAssets.loginButton,
                             ),
                             onPressed: () async {
-                              await signIn(context, watch);
+                              await signIn(context);
                             },
                           ),
                         ),
                       ],
                     ),
-                    Consumer(builder: (context, watch, child) {
+                    Consumer(builder: (context, watch, _) {
                       final watchAuthProvider =
                           watch(authenticationViewModelProvider);
+                      final authModel =
+                          watch(authenticationViewModelProvider.notifier);
                       return Container(
                         width: ScreenConstraintService(context)
                             .getConvertedWidth(270),
                         height: ScreenConstraintService(context).minHeight * 4,
                         child: Text(
-                          watchAuth.errorBuilder(watchAuthProvider) ?? "",
+                          authModel.errorBuilder(watchAuthProvider) ?? "",
                           style: TextStyle(
                             color: Colors.red,
                             fontFamily: GoogleFonts.sourceSansPro().fontFamily,
@@ -210,7 +217,9 @@ class LoginWidget extends ConsumerWidget {
                               );
                             },
                           ),
-                          onPressed: () {},
+                          onPressed: () {
+                            //TODO: Forgot Password
+                          },
                         ),
                       ],
                     ),

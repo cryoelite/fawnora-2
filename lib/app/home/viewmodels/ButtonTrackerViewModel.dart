@@ -1,5 +1,7 @@
 import 'package:fawnora/app/home/widgets/anim/viewmodels/currentAnimViewModel.dart';
-import 'package:fawnora/constants/StartStopButtonEnum.dart';
+import 'package:fawnora/models/StartStopButtonEnum.dart';
+import 'package:fawnora/services/TransectService.dart';
+import 'package:fawnora/services/UserService.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final buttonTrackerProvider =
@@ -11,11 +13,19 @@ class ButtonTrackerViewModel extends StateNotifier<StartStopButtonEnum> {
   ButtonTrackerViewModel(
       StartStopButtonEnum _startEnum, this._providerReference)
       : super(_startEnum);
-  void toggleState() {
-    if (state == StartStopButtonEnum.PLAY)
+  Future<void> toggleState() async {
+    if (state == StartStopButtonEnum.PLAY) {
+      final readUserService =
+          _providerReference.read(userServiceProvider).userModel;
+      if (readUserService != null) {
+        final readTransectService =
+            _providerReference.read(transectServiceProvider);
+        await readTransectService.increment(readUserService.username);
+      }
       state = StartStopButtonEnum.STOP;
-    else
+    } else {
       state = StartStopButtonEnum.PLAY;
+    }
     final watchAnimProvider =
         _providerReference.read(currentAnimViewModelProvider);
     watchAnimProvider.changeCurrentAnimation();

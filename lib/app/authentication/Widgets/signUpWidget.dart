@@ -1,10 +1,12 @@
 import 'package:fawnora/app/authentication/viewmodels/authViewModel.dart';
+import 'package:fawnora/common_widgets/AuthProgressIndicator.dart';
 import 'package:fawnora/common_widgets/CustomTextField.dart';
 import 'package:fawnora/constants/AppColors.dart';
 import 'package:fawnora/constants/AppRoutes.dart';
 import 'package:fawnora/constants/ImageAssets.dart';
 import 'package:fawnora/locale/LocaleConfig.dart';
 import 'package:fawnora/models/AuthEnum.dart';
+import 'package:fawnora/models/LocaleTypeEnum.dart';
 import 'package:fawnora/services/ScreenConstraintService.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -25,13 +27,15 @@ class SignUpWidget extends ConsumerWidget {
         .pushNamedAndRemoveUntil(AppRoutes.loginRoute, (_) => false);
   }
 
-  Future<void> signUp(BuildContext context, ScopedReader watch) async {
-    final watchAuth = watch(authenticationViewModelProvider.notifier);
-    await watchAuth.signUp(_usernameController.text, _passwordController.text,
-        _nameController.text, _accessCodeController.text);
-    if (watchAuth.currentState == AuthEnum.SUCCESS)
-      Navigator.of(context)
-          .pushNamedAndRemoveUntil(AppRoutes.homeRoute, (_) => false);
+  Future<void> signUp(BuildContext context) async {
+    if (context.read(authenticationViewModelProvider) != AuthEnum.LOADING) {
+      final watchAuth = context.read(authenticationViewModelProvider.notifier);
+      await watchAuth.signUp(_usernameController.text, _passwordController.text,
+          _nameController.text, _accessCodeController.text);
+      if (watchAuth.currentState == AuthEnum.SUCCESS)
+        Navigator.of(context)
+            .pushNamedAndRemoveUntil(AppRoutes.homeRoute, (_) => false);
+    }
   }
 
   @override
@@ -68,7 +72,7 @@ class SignUpWidget extends ConsumerWidget {
                       LengthLimitingTextInputFormatter(6),
                     ],
                     [],
-                    "Access Code",
+                    watchLocale.localeObject.accessCode,
                     errorText: watchAuth.validateAccessCode(
                       _accessCodeController.text,
                     ),
@@ -78,12 +82,17 @@ class SignUpWidget extends ConsumerWidget {
                     TextInputType.name,
                     [
                       FilteringTextInputFormatter.singleLineFormatter,
-                      FilteringTextInputFormatter.allow(
-                        RegExp(r"^[a-zA-Z]+(([',. -][a-zA-Z ])?[a-zA-Z]*)*$"),
-                      ),
+                      watchLocale.localeType != LocaleType.ENGLISH
+                          ? FilteringTextInputFormatter.allow(
+                              RegExp(r"/[~`!@#$%^&()_={}[\]:;,.<>+\/?-]/"),
+                            )
+                          : FilteringTextInputFormatter.allow(
+                              RegExp(
+                                  r"^[a-zA-Z]+(([',. -][a-zA-Z ])?[a-zA-Z]*)*$"),
+                            ),
                     ],
                     [],
-                    "Name",
+                    watchLocale.localeObject.name,
                     errorText: watchAuth.validateName(
                       _nameController.text,
                     ),
@@ -98,7 +107,7 @@ class SignUpWidget extends ConsumerWidget {
                     [
                       AutofillHints.telephoneNumber,
                     ],
-                    "Phone Number",
+                    watchLocale.localeObject.phoneNumber,
                     errorText: watchAuth.validateUsername(
                       _usernameController.text,
                     ),
@@ -112,7 +121,7 @@ class SignUpWidget extends ConsumerWidget {
                     [
                       AutofillHints.password,
                     ],
-                    "Password",
+                    watchLocale.localeObject.password,
                     obscure: true,
                     errorText: watchAuth.validatePassword(
                       _passwordController.text,
@@ -143,10 +152,7 @@ class SignUpWidget extends ConsumerWidget {
                             color: AppColors.color7,
                           ),
                         ),
-                        Container(
-                          width: ScreenConstraintService(context).minWidth * 9,
-                          height:
-                              ScreenConstraintService(context).minHeight * 5,
+                        AuthProgressIndicator(
                           child: IconButton(
                             iconSize: 24,
                             splashRadius: 24,
@@ -154,7 +160,7 @@ class SignUpWidget extends ConsumerWidget {
                               ImageAssets.signUpButton,
                             ),
                             onPressed: () async {
-                              await signUp(context, watch);
+                              await signUp(context);
                             },
                           ),
                         ),

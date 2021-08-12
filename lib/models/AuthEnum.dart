@@ -1,5 +1,6 @@
 enum AuthEnum {
   NONE,
+  LOADING,
   SUCCESS,
   BAD_ACCESS_CODE,
   FAILED_SIGN_UP,

@@ -7,15 +7,19 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 final localeProvider =
     Provider<LocaleConfig>((ref) => LocaleConfig(LocaleType.ENGLISH));
 
-class LocaleConfig {
-  final LocaleType localeType;
-  LocaleConfig(this.localeType);
+class LocaleConfig extends StateNotifier<LocaleType> {
+  LocaleType localeType;
+  LocaleConfig(this.localeType) : super(localeType);
   LocaleConstraints get localeObject {
-    if (localeType == LocaleType.ENGLISH)
+    if (state == LocaleType.ENGLISH)
       return EnglishLocaleConstraints();
-    else if (localeType == LocaleType.HINDI) {
+    else if (state == LocaleType.HINDI) {
       return HindiLocaleConstraints();
     } else
       return EnglishLocaleConstraints();
   }
+
+  set updateState(LocaleType value) => state = value;
+
+  LocaleType get currentState => state;
 }

@@ -1,6 +1,7 @@
 import 'package:fawnora/models/AuthEnum.dart';
 import 'package:fawnora/models/UnencryptedUserModel.dart';
 import 'package:fawnora/services/AuthService.dart';
+import 'package:fawnora/services/TransectService.dart';
 import 'package:fawnora/services/UserService.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -54,13 +55,15 @@ class AuthenticationViewModel extends StateNotifier<AuthEnum> {
   }
 
   Future<void> signIn(String username, String password) async {
+    state = AuthEnum.LOADING;
     if (_isUsernameGood(username) && _isPasswordGood(password)) {
-      print("in here");
       final watchAuth = _providerReference.watch(firebaseAuthProvider);
       final response = await watchAuth.signIn(username, password);
       if (response != null) {
-        state = AuthEnum.SUCCESS;
         _providerReference.watch(userServiceProvider).userModel = response;
+        await _providerReference.read(transectServiceProvider).init(username);
+        state = AuthEnum.SUCCESS;
+
         return;
       } else {
         state = AuthEnum.FAILED_SIGN_IN;
@@ -74,6 +77,7 @@ class AuthenticationViewModel extends StateNotifier<AuthEnum> {
 
   Future<void> signUp(
       String username, String password, String name, String accessCode) async {
+    state = AuthEnum.LOADING;
     if (_isAccessCodeGood(accessCode) &&
         _isNameGood(name) &&
         _isPasswordGood(password) &&
@@ -91,6 +95,7 @@ class AuthenticationViewModel extends StateNotifier<AuthEnum> {
         return;
       } else {
         _providerReference.watch(userServiceProvider).userModel = response;
+        await _providerReference.read(transectServiceProvider).init(username);
         state = AuthEnum.SUCCESS;
         await watchAuth.assignUserToAccessCode(accessCode, username);
 

@@ -10,8 +10,8 @@ import 'package:fawnora/services/HashingService.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final firebaseAuthProvider = Provider<AuthService>((ref) {
-  final watchFirestore = ref.watch(firestoreProvider);
-  final watchDeviceID = ref.watch(deviceIDProvider);
+  final watchFirestore = ref.read(firestoreProvider);
+  final watchDeviceID = ref.read(deviceIDProvider);
 
   return AuthService(watchFirestore, watchDeviceID);
 });

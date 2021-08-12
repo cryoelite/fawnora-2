@@ -1,6 +1,14 @@
+import 'package:fawnora/app/home/routes/track/viewmodels/ToShowAssistiveAddWidget.dart';
+import 'package:fawnora/app/home/routes/track/viewmodels/ToShowQuickAddViewModel.dart';
 import 'package:fawnora/app/home/viewmodels/ButtonTrackerViewModel.dart';
+import 'package:fawnora/app/home/widgets/AssistiveAdd/AssistiveAddWidget.dart';
 import 'package:fawnora/app/home/widgets/googleMaps/GoogleMapWidget.dart';
-import 'package:fawnora/constants/StartStopButtonEnum.dart';
+import 'package:fawnora/app/home/widgets/miniAssistiveAdd/MiniAssistiveAddWidget.dart';
+import 'package:fawnora/app/home/widgets/miniQuickAdd/MiniQuickAddWidget.dart';
+import 'package:fawnora/app/home/widgets/quickAdd/QuickAddWidget.dart';
+import 'package:fawnora/constants/AppColors.dart';
+import 'package:fawnora/constants/HeroTags.dart';
+import 'package:fawnora/models/StartStopButtonEnum.dart';
 import 'package:fawnora/services/ScreenConstraintService.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -50,6 +58,19 @@ class _TrackWidgetState extends State<TrackWidget> {
     );
   }
 
+  Widget _showStack(Widget _child) {
+    return Container(
+      width: ScreenConstraintService(context).maxWidth,
+      height: ScreenConstraintService(context).maxHeight,
+      color: AppColors.color2,
+      child: Stack(
+        children: [
+          _child,
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Stack(
@@ -70,8 +91,9 @@ class _TrackWidgetState extends State<TrackWidget> {
           },
         ),
         Consumer(
-          child: Container(
-            color: Colors.red,
+          child: Hero(
+            tag: HeroTags.quickAddTag,
+            child: MiniQuickAddWidget(),
           ),
           builder: (context, watch, child) {
             return _visibilityWidget(
@@ -83,16 +105,19 @@ class _TrackWidgetState extends State<TrackWidget> {
                   width: ScreenConstraintService(context).minWidth * 30,
                   height:
                       ScreenConstraintService(context).getConvertedHeight(164),
-                  child: child,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(20),
+                    child: child,
+                  ),
                 ),
               ),
             );
           },
         ),
-        //TODO: Create an elevated button with quickadd mini logo and then on pressed pass the event to its viewmodel in its folder causing it to replace child here with a fullscreen stack.
         Consumer(
-          child: Container(
-            color: Colors.blue,
+          child: Hero(
+            tag: HeroTags.assistiveAddTag,
+            child: MiniAssistiveAddWidget(),
           ),
           builder: (context, watch, child) {
             return _visibilityWidget(
@@ -104,10 +129,37 @@ class _TrackWidgetState extends State<TrackWidget> {
                   width: ScreenConstraintService(context).minWidth * 30,
                   height:
                       ScreenConstraintService(context).getConvertedHeight(164),
-                  child: child,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(20),
+                    child: child,
+                  ),
                 ),
               ),
             );
+          },
+        ),
+        Consumer(
+          builder: (context, watch, _) {
+            final watchQuick = watch(toShowQuickAddWidgetProvider);
+            final watchAssistive = watch(toShowAssistiveAddWidgetProvider);
+
+            if (watchQuick) {
+              return Hero(
+                tag: HeroTags.quickAddTag,
+                child: _showStack(
+                  QuickAddWidget(),
+                ),
+              );
+            } else if (watchAssistive) {
+              return _showStack(
+                Hero(
+                  tag: HeroTags.assistiveAddTag,
+                  child: AssistiveAddWidget(),
+                ),
+              );
+            } else {
+              return Container();
+            }
           },
         ),
       ],

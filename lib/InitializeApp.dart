@@ -1,5 +1,5 @@
 import 'package:fawnora/constants/AppColors.dart';
-import 'package:fawnora/constants/SystemOverlayOverrides.dart';
+import 'package:fawnora/services/SystemOverlayOverrides.dart';
 import 'package:fawnora/models/LocaleTypeEnum.dart';
 import 'package:fawnora/locale/LocaleConfig.dart';
 import 'package:fawnora/services/LocalStorageService.dart';
@@ -24,7 +24,6 @@ class InitializeApp {
 
     final localStorageLanguage = await getLocalStorageLanguage();
     if (localStorageLanguage == null) {
-      print("yoasd");
       await setLocalStorageLanguage(deviceLanguage);
     }
     _portraitModeOnly();

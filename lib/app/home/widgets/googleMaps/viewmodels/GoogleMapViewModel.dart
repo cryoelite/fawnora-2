@@ -19,9 +19,15 @@ class GoogleMapViewModel extends StateNotifier<LatLng?> {
   }
 
   Future<void> startLocationUpdateOnTimer() async {
+    final currentPos = await getCurrentLocation();
+    state = currentPos;
+  }
+
+  Future<LatLng> getCurrentLocation() async {
     final currentPos = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.best);
-    state = LatLng(currentPos.latitude, currentPos.longitude);
+    final latlng = LatLng(currentPos.latitude, currentPos.longitude);
+    return latlng;
   }
 
   @override
