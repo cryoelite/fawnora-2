@@ -1,4 +1,4 @@
-class FirestoreDocuments {
+class FirestoreDocumentsAndFields {
   static const flora = 'Flora';
   static const fauna = 'Fauna';
   static const disturbance = 'Disturbance';
@@ -8,6 +8,13 @@ class FirestoreDocuments {
   static const imageVersion = 'ImageStorageVersion';
   static const mainDataVersion = 'MainDataCollectionVersion';
   static const version = 'Version';
+  static const userDataDeviceID = 'Unique Device ID';
+  static const userDataIV = 'IV';
+  static const userDataIVV = 'IVV';
+  static const userDataPassword = 'Password';
+  static const userDataName = 'Name';
+  static const userDataUserName = 'UserName';
+
   static const userTotalEntries = 'totalEntries';
   static const userTransectCount = 'transectCount';
   static const userEntries = 'entries';
@@ -18,4 +25,8 @@ class FirestoreDocuments {
   static const userTime = 'timestamp';
   static const userTransect = 'transect';
   static const userEntryLanguage = 'language';
+  static const imageMap = 'ImageMap';
+
+  static const imageMapEnglish = 'english';
+  static const imageMapHindi = 'hindi';
 }

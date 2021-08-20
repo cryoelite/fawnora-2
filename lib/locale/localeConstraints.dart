@@ -1,4 +1,7 @@
+import 'package:fawnora/models/LocaleTypeEnum.dart';
+
 abstract class LocaleConstraints {
+  LocaleType get localeType;
   String get welcomeText;
   String get loginText;
   String get signUpText;
@@ -21,4 +24,11 @@ abstract class LocaleConstraints {
   String get submissionSuccess;
   String get submissionFailure;
   String get searchSpecie;
+  String get specie;
+  String get subspecie;
+  String get specieType;
+  String get language;
+  String get waitCompletion;
+  String get aboutApp;
+  String itemNotFound(String item);
 }

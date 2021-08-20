@@ -1,49 +1,62 @@
 import 'dart:developer' as dev;
-import 'dart:math';
 
+import 'package:fawnora/constants/FirestoreDocuments.dart';
 import 'package:fawnora/models/EncryptedUserModel.dart';
 import 'package:fawnora/models/UnencryptedUserModel.dart';
+import 'package:fawnora/services/DeviceID.dart';
 import 'package:fawnora/services/FirestoreService.dart';
-import 'package:fawnora/services/GetDeviceIDService.dart';
+import 'package:fawnora/services/WatchManService.dart';
 import 'package:fawnora/services/HashingService.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final firebaseAuthProvider = Provider<AuthService>((ref) {
+  dev.log("Auth Provider started", level: 800);
+  final watchman = ref.read(watchManProvider.notifier);
   final watchFirestore = ref.read(firestoreProvider);
-  final watchDeviceID = ref.read(deviceIDProvider);
-
-  return AuthService(watchFirestore, watchDeviceID);
+  return AuthService(watchFirestore, watchman);
 });
 
 class AuthService {
+  final _className = 'AuthService';
   final FirestoreService _firestoreService;
-  final GetDeviceIDService _deviceIDService;
-  const AuthService(this._firestoreService, this._deviceIDService);
+  final WatchManService _watchManService;
+  const AuthService(this._firestoreService, this._watchManService);
 
   Future<bool> verifyAccessCode(String accessCode, String username) async {
-    dev.log("Verifying Access Code", level: 800);
+    dev.log("$_className: Verifying Access Code", level: 800);
     final accessCodeDoc =
         await _firestoreService.getAccessCodeDocument(accessCode);
     String? accessCodeDocValue;
-    final data = accessCodeDoc.data();
-    if (data != null) accessCodeDocValue = data["Username"];
+    final data = accessCodeDoc;
+    if (data.isNotEmpty)
+      accessCodeDocValue = data.putIfAbsent(
+          FirestoreDocumentsAndFields.userDataUserName, () => null);
 
-    if (!accessCodeDoc.exists ||
+    if (accessCodeDoc.isNotEmpty ||
         (accessCodeDocValue != null && accessCodeDocValue != username)) {
+      dev.log("$_className: Verifying Access Code complete", level: 800);
+
       return false;
     } else if (accessCodeDocValue != null && accessCodeDocValue == username) {
+      dev.log("$_className: Verifying Access Code complete", level: 800);
+
       return true;
     } else {
+      dev.log("$_className: Verifying Access Code complete", level: 800);
+
       return true;
     }
   }
 
   Future<void> assignUserToAccessCode(
-          String accessCode, String username) async =>
-      await _firestoreService.assignUserToAccessCode(accessCode, username);
+      String accessCode, String username) async {
+    dev.log("$_className: Assigning user to access code", level: 800);
 
-  Future<bool> accessCodeRaceResolver(
+    await _firestoreService.assignUserToAccessCode(accessCode, username);
+  }
+
+  /*  Future<bool> accessCodeRaceResolver(
       String accessCode, EncryptedUserModel userModel) async {
     final Random random = Random();
     await Future.delayed(
@@ -60,7 +73,7 @@ class AuthService {
     if (data != null) accessCodeDocValue = data["Username"];
     if (accessCodeDocValue == userModel.username) return true;
     return false;
-  }
+  } */
 
   /*  Future<String> genUID(String username) async =>
       await HashingService().genHash(username); */
@@ -75,7 +88,7 @@ class AuthService {
   } */
 
   Future<EncryptedUserModel?> signUp(UnencryptedUserModel userModel) async {
-    dev.log("SignUp started", level: 800);
+    dev.log("$_className: SignUp started", level: 800);
     try {
       HashingService hashingService = HashingService();
       final iv = hashingService.genIV();
@@ -88,7 +101,7 @@ class AuthService {
       final encrIV = await hashingService.encrIV(iv, ivv);
       final encrUserModel =
           EncryptedUserModel(userModel.username, encrName, encrPass);
-      final deviceID = await _deviceIDService.id();
+      final deviceID = await DeviceID().getDeviceid();
       final userStatus = await _firestoreService.verifyUser(userModel.username);
       if (!userStatus) {
         await _firestoreService.addUser(
@@ -98,28 +111,34 @@ class AuthService {
           deviceID,
         );
       } else {
+        dev.log("$_className: SignUp failed", level: 800);
+
         return null;
       }
 
+      _watchManService.startWatchman(userModel.username, deviceID);
+      dev.log("$_className: SignUp complete", level: 800);
+
       return encrUserModel;
     } catch (e) {
-      dev.log("Error in AuthService. $e", level: 800);
+      dev.log("$_className: Error in AuthService. $e", level: 800);
       return null;
     }
   }
 
   Future<EncryptedUserModel?> signIn(String username, String pass) async {
-    dev.log("SignIn started.", level: 800);
+    dev.log("$_className: SignIn started.", level: 800);
     try {
       final data = await _firestoreService.getUserData(username);
       final hashingService = HashingService();
 
       if (data == null) return null;
-      final String? password = data["Password"];
+      final String? password =
+          data[FirestoreDocumentsAndFields.userDataPassword];
 
-      final String? iv = data["IV"];
+      final String? iv = data[FirestoreDocumentsAndFields.userDataIV];
 
-      final String? ivv = data["IVV"];
+      final String? ivv = data[FirestoreDocumentsAndFields.userDataIVV];
       if (password == null ||
           iv == null ||
           ivv == null ||
@@ -132,15 +151,20 @@ class AuthService {
           await hashingService.decrPassword(password, decrIV);
 
       if (decrPassword != pass) return null;
-      final userModel =
-          EncryptedUserModel(username, data["name"] ?? "", password);
+      final userModel = EncryptedUserModel(username,
+          data[FirestoreDocumentsAndFields.userDataName] ?? "", password);
 
-      final deviceID = await GetDeviceIDService().id();
+      final deviceID = await DeviceID().getDeviceid();
 
       await _firestoreService.refreshLoggedInDeviceID(username, deviceID);
+
+      _watchManService.startWatchman(userModel.username, deviceID);
+
+      dev.log("$_className: SignIn complete.", level: 800);
+
       return userModel;
     } catch (e) {
-      dev.log("Error in AuthService. $e", level: 800);
+      dev.log("$_className: Error in AuthService. $e", level: 800);
       return null;
     }
   }

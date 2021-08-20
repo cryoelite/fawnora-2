@@ -5,6 +5,7 @@ import 'package:fawnora/common_widgets/viewmodels/ButtonIconViewModel.dart';
 import 'package:fawnora/constants/AppColors.dart';
 import 'package:fawnora/constants/ImageAssets.dart';
 import 'package:fawnora/locale/LocaleConfig.dart';
+import 'package:fawnora/locale/localeConstraints.dart';
 import 'package:fawnora/models/LocaleTypeEnum.dart';
 import 'package:fawnora/models/SpecieModel.dart';
 import 'package:fawnora/models/SpecieTypeEnum.dart';
@@ -24,14 +25,14 @@ class QuickAddWidget extends StatelessWidget {
 
   Widget _getSpecieIcons(
     BuildContext context,
-    LocaleConfig watchLocale,
+    LocaleConstraints watchLocale,
   ) {
     final SpecieModel _specieModel1;
     final SpecieModel _specieModel2;
     final SpecieModel _specieModel3;
 
     _specieModel1 = SpecieModel(
-      watchLocale.localeObject.flora,
+      watchLocale.flora,
       ImageAssets.floraIcon,
       SpecieValueType.SPECIETYPE,
       _getUid(context),
@@ -40,7 +41,7 @@ class QuickAddWidget extends StatelessWidget {
           : SpecieType.FLORA_HINDI,
     );
     _specieModel2 = SpecieModel(
-      watchLocale.localeObject.fauna,
+      watchLocale.fauna,
       ImageAssets.faunaIcon,
       SpecieValueType.SPECIETYPE,
       _getUid(context),
@@ -49,7 +50,7 @@ class QuickAddWidget extends StatelessWidget {
           : SpecieType.FAUNA_HINDI,
     );
     _specieModel3 = SpecieModel(
-      watchLocale.localeObject.disturbance,
+      watchLocale.disturbance,
       ImageAssets.disturbanceIcon,
       SpecieValueType.SPECIETYPE,
       _getUid(context),
@@ -85,7 +86,7 @@ class QuickAddWidget extends StatelessWidget {
   ) async {
     final watchSpecie = watch(activeSpecieTypeIconIdProvider);
     final watchLocalStorage = watch(localStorageProvider);
-    final watchLocale = watch(localeProvider);
+    final watchLocale = watch(localeConfigProvider);
     final List<ButtonIcon> buttonIcons;
     if (watchSpecie == null) {
       if (watchLocale.localeType == LocaleType.HINDI) {
@@ -121,7 +122,7 @@ class QuickAddWidget extends StatelessWidget {
     );
   }
 
-  List<ButtonIcon> _getButtonIcons(Map<String, List<String>> data,
+  List<ButtonIcon> _getButtonIcons(Map<String, List<String>?> data,
       BuildContext context, SpecieType type, LocaleType localeType) {
     final listData = data.keys.map(
       (e) => ButtonIcon(
@@ -143,7 +144,7 @@ class QuickAddWidget extends StatelessWidget {
         type == SpecieType.DISTURBANCE_HINDI) {
       assetName = ImageAssets.disturbanceIcon;
     } else if (type == SpecieType.FLORA || type == SpecieType.FLORA_HINDI) {
-      assetName = ImageAssets.disturbanceIcon;
+      assetName = ImageAssets.floraIcon;
     } else {
       assetName = ImageAssets.faunaIcon;
     }
@@ -220,44 +221,50 @@ class QuickAddWidget extends StatelessWidget {
               children: [
                 Align(
                   alignment: Alignment(0, -0.9),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      Container(
-                        width: ScreenConstraintService(context).minWidth * 10,
-                        height: ScreenConstraintService(context).minHeight * 5,
-                        child: Image.asset(
-                          ImageAssets.bookIcon,
-                          fit: BoxFit.scaleDown,
+                  child: Container(
+                    width:
+                        ScreenConstraintService(context).getConvertedWidth(234),
+                    height: ScreenConstraintService(context).minHeight * 23,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Container(
+                          width: ScreenConstraintService(context).minWidth * 10,
+                          height:
+                              ScreenConstraintService(context).minHeight * 5,
+                          child: Image.asset(
+                            ImageAssets.bookIcon,
+                            fit: BoxFit.scaleDown,
+                          ),
                         ),
-                      ),
-                      Container(
-                        child: Consumer(
-                          builder: (context, watch, _) {
-                            final watchLocale = watch(localeProvider);
+                        Container(
+                          child: Consumer(
+                            builder: (context, watch, _) {
+                              final watchLocale = watch(localeConfigProvider);
 
-                            return Text(
-                              watchLocale.localeObject.quickAddTitle,
-                              style: TextStyle(
-                                color: AppColors.color7,
-                                fontFamily:
-                                    GoogleFonts.merriweather().fontFamily,
-                                fontSize:
-                                    ScreenConstraintService(context).minHeight *
-                                        1.6,
-                              ),
-                            );
-                          },
-                        ),
-                      )
-                    ],
+                              return Text(
+                                watchLocale.quickAddTitle,
+                                style: TextStyle(
+                                  color: AppColors.color7,
+                                  fontFamily:
+                                      GoogleFonts.merriweather().fontFamily,
+                                  fontSize: ScreenConstraintService(context)
+                                          .minHeight *
+                                      1.6,
+                                ),
+                              );
+                            },
+                          ),
+                        )
+                      ],
+                    ),
                   ),
                 ),
                 Align(
                   alignment: Alignment(0, -0.1),
                   child: Consumer(builder: (context, watch, _) {
-                    final watchLocale = watch(localeProvider);
+                    final watchLocale = watch(localeConfigProvider);
                     return _getSpecieIcons(context, watchLocale);
                   }),
                 ),

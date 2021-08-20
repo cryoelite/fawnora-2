@@ -15,7 +15,7 @@ class MainApp extends StatelessWidget {
     return MaterialApp(
       title: 'Fawnora',
       theme: ThemeData(
-        primarySwatch: AppColors().createMaterialColor(
+        primarySwatch: AppColors.createMaterialColor(
           AppColors.color2,
         ),
         textTheme: TextTheme(

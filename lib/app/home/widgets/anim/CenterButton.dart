@@ -1,3 +1,4 @@
+import 'package:fawnora/app/home/widgets/AssistiveAdd/viewmodels/selectionStatusViewModel.dart';
 import 'package:fawnora/app/home/widgets/DropDown/viewmodels/DropDownViewModel.dart';
 import 'package:fawnora/app/home/widgets/anim/viewmodels/animViewModel.dart';
 import 'package:fawnora/common_widgets/viewmodels/ButtonIconViewModel.dart';
@@ -20,11 +21,12 @@ class CenterButton extends StatelessWidget {
                   final watchSpecie = watch(activeSpecieTypeIconIdProvider);
                   final watchSubSpecie = watch(activeSubSpecieIconIdProvider);
                   final watchDropdown = watch(dropDownValueProvider);
-
+                  final watchAssistive = watch(selectionStatusProvider);
                   if (snapshot.connectionState == ConnectionState.done) {
-                    if (watchSpecie != null &&
-                        watchSubSpecie != null &&
-                        watchDropdown.value != null) {
+                    if ((watchSpecie != null &&
+                            watchSubSpecie != null &&
+                            watchDropdown.value != null) ||
+                        (watchAssistive != null)) {
                       return Image(
                         image: AssetImage(
                           ImageAssets.tickIcon,

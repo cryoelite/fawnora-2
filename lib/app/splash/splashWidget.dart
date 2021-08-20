@@ -42,9 +42,9 @@ class _SplashWidgetState extends State<SplashWidget> {
             alignment: Alignment.center,
             width: ScreenConstraintService(context).maxWidth,
             child: Consumer(builder: (context, watch, child) {
-              final watchLocale = watch(localeProvider);
+              final watchLocale = watch(localeConfigProvider);
               return Text(
-                watchLocale.localeObject.welcomeText,
+                watchLocale.welcomeText,
                 style: TextStyle(
                   color: AppColors.color7,
                   fontSize:

@@ -1,8 +1,8 @@
-import 'package:fawnora/constants/AppColors.dart';
 import 'package:fawnora/services/SystemOverlayOverrides.dart';
 import 'package:fawnora/models/LocaleTypeEnum.dart';
 import 'package:fawnora/locale/LocaleConfig.dart';
 import 'package:fawnora/services/LocalStorageService.dart';
+import 'package:fawnora/services/WatchManService.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -30,10 +30,19 @@ class InitializeApp {
     _setSystemTheme();
     runApp(
       ProviderScope(
-        child: mainApp,
+        child: Consumer(
+            child: mainApp,
+            builder: (context, watch, child) {
+              final watchWatchMan = watch(watchManProvider);
+
+              return KeyedSubtree(
+                key: watchWatchMan,
+                child: child!,
+              );
+            }),
         overrides: [
-          localeProvider.overrideWithValue(
-            LocaleConfig(localStorageLanguage ?? deviceLanguage),
+          localeTypeProvider.overrideWithValue(
+            LocaleTypeConfig(localStorageLanguage ?? deviceLanguage),
           ),
         ],
       ),

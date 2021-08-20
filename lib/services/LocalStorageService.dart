@@ -1,150 +1,229 @@
-import 'dart:developer';
+import 'dart:developer' as dev;
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:fawnora/constants/LocalStorageBoxes.dart';
 import 'package:fawnora/constants/LocalStorageKeys.dart';
 import 'package:fawnora/models/LocaleTypeEnum.dart';
 import 'package:fawnora/models/SpecieTypeEnum.dart';
+import 'package:fawnora/services/DataSanitizerService.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive/hive.dart';
+import 'package:path_provider/path_provider.dart';
 
-final localStorageProvider =
-    Provider<LocalStorageService>((_) => LocalStorageService());
+final localStorageProvider = Provider<LocalStorageService>((_) {
+  dev.log("LocalStorage Provider started", level: 800);
+  return LocalStorageService();
+});
 
 class LocalStorageService {
-  final String encodingCharacter = '%';
+  final String _className = 'LocalStorage';
+  final _dataSanitizer = DataSanitizerService();
+
   Future<void> storeLanguage(LocaleType localeType) async {
+    dev.log('$_className: Storing locale data', level: 800);
     final box = await Hive.openBox<LocaleType>(LocalStorageBoxes.languageBox);
     box.put(LocalStorageKeys.languageKey, localeType);
     await box.close();
+    dev.log('$_className: Storing locale data complete', level: 800);
   }
 
   Future<LocaleType?> retrieveLanguage() async {
+    dev.log('$_className: Retrieving language', level: 800);
+
     final box = await Hive.openBox<LocaleType>(LocalStorageBoxes.languageBox);
     final value = box.get(LocalStorageKeys.languageKey);
     await box.close();
+
+    dev.log('$_className: Retrieval of locale complete', level: 800);
+
     return value;
   }
 
-  Future<void> storeFirestoreversions(
-      String imageStorageVersion, String mainDataVersion) async {
+  Future<void> storeFirestoreversion(String mainDataVersion) async {
+    dev.log('$_className: Storing firestore version', level: 800);
+
     final box = await Hive.openBox(LocalStorageBoxes.firestoreMetadata);
-    await box.put(LocalStorageKeys.imageStorageVersionKey, imageStorageVersion);
     await box.put(
         LocalStorageKeys.mainDataCollectionVersionKey, mainDataVersion);
+
+    dev.log('$_className: Storing firestore version complete', level: 800);
+
     await box.close();
   }
 
+  Future<void> storeFirebaseStorageversion(String imageStorageVersion) async {
+    dev.log('$_className: Storing firebase storage version', level: 800);
+    final file = await _getPath(LocalStorageKeys.imageStorageVersion);
+    await file.create(recursive: true);
+
+    await file.writeAsString(imageStorageVersion);
+
+    dev.log('$_className: Storing firebase storage version complete',
+        level: 800);
+  }
+
   Future<Map<String, String?>> retrieveLocalVersions() async {
+    dev.log('$_className: Retrieving local version', level: 800);
+
     final box = await Hive.openBox(LocalStorageBoxes.firestoreMetadata);
-    final imageVersion =
-        (await box.get(LocalStorageKeys.imageStorageVersionKey)).toString();
+    final file = await _getPath(LocalStorageKeys.imageStorageVersion);
+    String? imageVersion;
+    if (await file.exists()) {
+      imageVersion = await file.readAsString();
+    }
+
     final mainDataVersion =
         (await box.get(LocalStorageKeys.mainDataCollectionVersionKey))
-            .toString();
+            ?.toString();
     await box.close();
     final data = {
-      LocalStorageKeys.imageStorageVersionKey: imageVersion,
+      LocalStorageKeys.imageStorageVersion: imageVersion,
       LocalStorageKeys.mainDataCollectionVersionKey: mainDataVersion,
     };
+
+    dev.log('$_className: Retrieving local version complete', level: 800);
+
     return data;
   }
 
   Future<void> storeSubspecieData(
       Map<SpecieType, Map<String, List<String>>> subspecies) async {
+    dev.log('$_className: Storing Subspecie data', level: 800);
+
     for (var elem in subspecies.entries) {
       final box = await _getSubSpecieBox(elem.key);
       final encVal = _encodeAndMap(elem.value);
       await box.putAll(encVal);
 
+      dev.log('$_className: Storing Subspecie data complete', level: 800);
+
       await box.close();
     }
   }
 
-  Map<String, Map<String, String>> _encodeAndImageMap(
-      Map<String, Map<String, String>> imageMap) {
-    final convMap = imageMap.map((key, value) {
+  Map<String, Map<String, String>>? _encodeAndImageMap(
+      Map<String, Map<String, String>>? imageMap) {
+    dev.log('$_className: Encoding image map', level: 700);
+
+    final convMap = imageMap?.map((key, value) {
+      final convKey = _dataSanitizer.encodeString(key);
       final convVal = value.map((key, value) {
-        final convVal2 = _encodeKeys(value);
-        return MapEntry(key, convVal2);
+        final convVal2 = _dataSanitizer.encodeString(value);
+        final convkey2 = _dataSanitizer.encodeString(key);
+        return MapEntry(convkey2, convVal2);
       });
-      return MapEntry(key, convVal);
+      return MapEntry(convKey, convVal);
     });
+    dev.log('$_className: Encoding image map complete', level: 700);
+
     return convMap;
   }
 
   Map<String, List<String>> _encodeAndMap(Map<String, List<String>> data) {
+    dev.log('$_className: Encoding map', level: 700);
+
     final m2 = data.map((key, val) {
-      final convKey = _encodeKeys(key);
+      final convKey = _dataSanitizer.encodeString(key);
 
       return MapEntry(convKey, val);
     });
+
+    dev.log('$_className: Encoding map complete', level: 700);
+
     return m2;
   }
 
-  String _encodeKeys(String key) {
-    final convKey = key.codeUnits.join(encodingCharacter);
-    return convKey;
-  }
+  Map<String, Map<String, String>?> _decodeAndImageMap(
+      Map<String, Map<String, String>?> imageMap) {
+    dev.log('$_className: Decoding image map', level: 700);
 
-  Map<String, Map<String, String>> _decodeAndImageMap(
-      Map<String, Map<String, String>> imageMap) {
     final convImage = imageMap.map((key, value) {
-      final convVal = value.map((key, value) {
-        final convVal2 = _decodeKeys(value);
-        return MapEntry(key, convVal2);
+      final convKey = _dataSanitizer.decodeString(key);
+      final convVal = value?.map((key, value) {
+        final convKey2 = _dataSanitizer.decodeString(key);
+        final convVal2 = _dataSanitizer.decodeString(value);
+        return MapEntry(convKey2, convVal2);
       });
-      return MapEntry(key, convVal);
+      return MapEntry(convKey, convVal);
     });
+
+    dev.log('$_className: Encoding image map complete', level: 700);
 
     return convImage;
   }
 
-  Map<String, List<String>> _decodeAndMap(Map<String, List<String>> data) {
+  Map<String, List<String>?> _decodeAndMap(Map<String, List<String>?> data) {
+    dev.log('$_className: Decoding map', level: 700);
+
     final m3 = data.map((key, val) {
-      final convKey = _decodeKeys(key);
+      final convKey = _dataSanitizer.decodeString(key);
+
       return MapEntry(convKey, val);
     });
+
+    dev.log('$_className: Decoding map complete', level: 700);
+
     return m3;
   }
 
-  String _decodeKeys(String key) {
-    final chars = key.split(encodingCharacter).map((elem) => int.parse(elem));
-    key = String.fromCharCodes(chars);
-    return key;
-  }
-
-  Future<Map<String, List<String>>> retrieveSubspecieData(
+  Future<Map<String, List<String>?>> retrieveSubspecieData(
       SpecieType type) async {
+    dev.log('$_className: Retrieving Subspecie Data', level: 800);
+
     final box = await _getSubSpecieBox(type);
     final data = box.toMap().map((key, value) {
       final convKey = key.toString();
-      if (value is List) {
+      if (value is List && value.isNotEmpty) {
         final convVal = value.map((element) {
           return element.toString();
         });
         return MapEntry(convKey, convVal.toList());
       } else {
-        throw TypeError();
+        return MapEntry(convKey, null);
       }
     });
+
     await box.close();
 
     final convData = _decodeAndMap(data);
+
+    dev.log('$_className: Retrieving Subspecie Data complete', level: 800);
+
     return convData;
   }
 
-  Future<Map<SpecieType, Map<String, List<String>>>>
-      retrieveAllSubspecieData() async {
-    final Map<SpecieType, Map<String, List<String>>> mapData = {};
+  Future<Map<SpecieType, Map<String, List<String>?>>> retrieveAllSubspecieData(
+      LocaleType localeType) async {
+    dev.log('$_className: Retrieving All Subspecie Data', level: 800);
+
+    final Map<SpecieType, Map<String, List<String>?>> mapData = {};
     for (var type in SpecieType.values) {
-      final data = await retrieveSubspecieData(type);
-      mapData[type] = data;
+      if (localeType == LocaleType.HINDI) {
+        if (type == SpecieType.DISTURBANCE_HINDI ||
+            type == SpecieType.FAUNA_HINDI ||
+            type == SpecieType.FLORA_HINDI) {
+          final data = await retrieveSubspecieData(type);
+          mapData[type] = data;
+        }
+      } else {
+        if (type == SpecieType.DISTURBANCE ||
+            type == SpecieType.FAUNA ||
+            type == SpecieType.FLORA) {
+          final data = await retrieveSubspecieData(type);
+          mapData[type] = data;
+        }
+      }
     }
+
+    dev.log('$_className: Retrieving All Subspecie Data complete', level: 800);
+
     return mapData;
   }
 
   Future<void> resetLocalDbBoxes() async {
+    dev.log('$_className: Resetting local boxes', level: 800);
+
     for (var value in SpecieType.values) {
       final box = await _getSubSpecieBox(value);
       await box.clear();
@@ -154,16 +233,19 @@ class LocalStorageService {
     await box.clear();
     await box.close();
 
-    final box2 = await Hive.openBox(LocalStorageBoxes.imageBox);
-    await box2.clear();
-    await box2.close();
+    final dir = await getTemporaryDirectory();
+    await dir.delete(recursive: true);
 
     final box3 = await Hive.openBox(LocalStorageBoxes.imageMap);
     await box3.clear();
     await box3.close();
+
+    dev.log('$_className: Resetting local boxes complete', level: 800);
   }
 
   Future<Box<dynamic>> _getSubSpecieBox(SpecieType type) async {
+    dev.log('$_className: Get Subspecie box', level: 700);
+
     final Box<dynamic> box;
     if (type == SpecieType.FLORA) {
       box = await Hive.openBox(LocalStorageBoxes.floraBox);
@@ -178,47 +260,102 @@ class LocalStorageService {
     } else {
       box = await Hive.openBox(LocalStorageBoxes.disturbance_hindiBox);
     }
+
+    dev.log('$_className: Get Subspecie box complete', level: 700);
+
     return box;
   }
 
+  Future<File> _getPath(String convFilename) async {
+    dev.log('$_className: Get Temporary Directory', level: 700);
+
+    final dir = await getTemporaryDirectory();
+    final file =
+        File('${dir.path}/${LocalStoragePaths.imageData}/$convFilename');
+    dev.log('$_className: Get Temporary Directory complete', level: 700);
+
+    return file;
+  }
+
   Future<void> storeImage(Uint8List imageData, String filename) async {
-    final box = await Hive.openBox(LocalStorageBoxes.imageBox);
-    await box.put(filename, imageData);
-    await box.close();
+    dev.log('$_className: Store Image', level: 800);
+
+    final convFilename = _dataSanitizer.encodeString(filename);
+    final file = await _getPath(convFilename);
+    await file.create(recursive: true);
+    await file.writeAsBytes(imageData);
+
+    dev.log('$_className: Store Image complete', level: 800);
   }
 
   Future<Uint8List?> retrieveImage(String filename) async {
-    final box = await Hive.openBox(LocalStorageBoxes.imageBox);
-    final data = await box.get(filename);
-    await box.close();
-    if (data == null || !data is Uint8List) {
+    dev.log('$_className: Retrieving Image', level: 800);
+    final convFilename = _dataSanitizer.encodeString(filename);
+
+    final file = await _getPath(convFilename);
+    Uint8List data;
+    if (await file.exists()) {
+      data = await file.readAsBytes();
+    } else {
+      dev.log('$_className: Retrieving Image failed as image file doesnt exist',
+          level: 800);
+
       return null;
     }
+
+    dev.log('$_className: Retrieving Image Complete', level: 800);
+
     return data;
   }
 
-  Future<void> storeImageMap(Map<String, Map<String, String>> imageMap) async {
+  Future<bool> checkImage(String filename) async {
+    dev.log('$_className: Checking Image', level: 800);
+    final convFilename = _dataSanitizer.encodeString(filename);
+
+    final file = await _getPath(convFilename);
+    final status = await file.exists();
+
+    dev.log('$_className: Checking Image Complete, image exists: $status',
+        level: 800);
+
+    return status;
+  }
+
+  Future<void> storeImageMap(Map<String, Map<String, String>>? imageMap) async {
+    dev.log('$_className: Storing Image Map', level: 800);
+
     final box = await Hive.openBox(LocalStorageBoxes.imageMap);
     final convMap = _encodeAndImageMap(imageMap);
-    await box.putAll(convMap);
+
+    if (convMap != null) {
+      await box.putAll(convMap);
+    }
+    dev.log('$_className: Storing image map complete', level: 800);
+
     await box.close();
   }
 
-  Future<Map<String, Map<String, String>>> retrieveImageMap() async {
+  Future<Map<String, Map<String, String>?>> retrieveImageMap() async {
+    dev.log('$_className: Retrieve image map', level: 800);
+
     final box = await Hive.openBox(LocalStorageBoxes.imageMap);
     final data = box.toMap();
-    final Map<String, Map<String, String>> imageMap = data.map((key, value) {
+    final Map<String, Map<String, String>?> imageMap = data.map((key, value) {
       final convKey = key.toString();
-      if (value is Map<String, String>) {
-        return MapEntry(convKey, value);
+      if (value is Map && value.isNotEmpty) {
+        final val1 = value.keys.first.toString();
+        final val2 = value.values.first.toString();
+        return MapEntry(convKey, {val1: val2});
       } else {
-        throw TypeError();
+        return MapEntry(convKey, null);
       }
     });
 
     final convImageMap = _decodeAndImageMap(imageMap);
     await box.close();
+
+    dev.log('$_className: Retrieving image map complete', level: 800);
+
     return convImageMap;
   }
 }
-//TODO: Sync image map and images. Then build searchBarprovider and then list for the bar.

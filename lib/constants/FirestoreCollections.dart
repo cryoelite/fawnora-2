@@ -5,4 +5,5 @@ abstract class FirestoreCollections {
   static const versionCollection = "Version";
   static const userDataCollection = "UserData";
   static const userMetaDataCollection = 'UserMetaData';
+  static const imageDataCollection = 'ImageData';
 }

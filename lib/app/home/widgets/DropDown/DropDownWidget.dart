@@ -28,12 +28,12 @@ class DropDownWidget extends StatelessWidget {
       ),
       child: Consumer(builder: (context, watch, _) {
         final watchDropDownProvider = watch(dropDownValueProvider);
-        final watchLocale = watch(localeProvider);
+        final watchLocale = watch(localeConfigProvider);
         return DropdownButtonHideUnderline(
           child: DropdownButton<String>(
             items: dropDownItems,
             hint: Text(
-              watchLocale.localeObject.selectSpecie,
+              watchLocale.selectSpecie,
               style: TextStyle(
                 color: AppColors.color7,
                 fontFamily: GoogleFonts.sourceSansPro().fontFamily,

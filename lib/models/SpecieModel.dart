@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:fawnora/models/SpecieTypeEnum.dart';
 import 'package:fawnora/models/SpecieValueTypeEnum.dart';
 
@@ -8,6 +10,7 @@ class SpecieModel {
   final SpecieValueType specieValueType;
   final int specieId;
   final SpecieType specieType;
+  final Uint8List? imagedata;
   SpecieModel(
     this.name,
     this.localImageAsset,
@@ -15,6 +18,7 @@ class SpecieModel {
     this.specieId, {
     required this.specieType,
     this.subSpecie,
+    this.imagedata,
   });
 
   @override

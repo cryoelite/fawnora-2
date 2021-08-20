@@ -1,59 +1,101 @@
-import 'package:fawnora/common_widgets/CustomTextField.dart';
+import 'package:fawnora/app/home/widgets/SearchBar/viewmodels/searchBarViewModel.dart';
 import 'package:fawnora/constants/AppColors.dart';
 import 'package:fawnora/locale/LocaleConfig.dart';
 import 'package:fawnora/services/ScreenConstraintService.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:material_floating_search_bar/material_floating_search_bar.dart';
 
-class SearchBar extends ConsumerWidget {
+class SearchBar extends StatelessWidget {
   final searchController = TextEditingController();
   SearchBar({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context, ScopedReader watch) {
-    final watchLocale = watch(localeProvider);
+  Widget build(BuildContext context) {
+    return Consumer(builder: (context, watch, _) {
+      final watchLocale = watch(localeConfigProvider);
 
-    return Container(
-      decoration: BoxDecoration(
-          color: AppColors.color2, borderRadius: BorderRadius.circular(16)),
-      padding: EdgeInsets.only(
-        left: ScreenConstraintService(context).minWidth * 2,
-      ),
-      width: ScreenConstraintService(context).getConvertedWidth(250),
-      height: ScreenConstraintService(context).minHeight * 5,
-      child: TextField(
-        autocorrect: false,
-        autofocus: false,
-        controller: searchController,
-        cursorColor: AppColors.color7,
-        inputFormatters: [
-          FilteringTextInputFormatter.singleLineFormatter,
-          LengthLimitingTextInputFormatter(15),
-        ],
-        keyboardType: TextInputType.text,
-        maxLines: 1,
-        style: TextStyle(
-          color: AppColors.color7,
-          fontSize: ScreenConstraintService(context).minHeight * 1.5,
-          fontFamily: GoogleFonts.sourceSansPro().fontFamily,
-        ),
-        decoration: InputDecoration(
-          hintText: watchLocale.localeObject.searchSpecie,
-          contentPadding: EdgeInsets.only(
-            left: ScreenConstraintService(context).minWidth * 3,
-            top: -ScreenConstraintService(context).minHeight * 0.8,
-          ),
+      return Container(
+        width: ScreenConstraintService(context).getConvertedWidth(250),
+        child: FloatingSearchBar(
+          onQueryChanged: (val) {
+            if (val.isEmpty) {
+              context.read(searchBarProvider.notifier).newState = null;
+            }
+          },
+          onSubmitted: (val) {
+            context.read(searchBarProvider.notifier).newState =
+                val.toLowerCase();
+          },
+          height: ScreenConstraintService(context).minHeight * 2.5,
+          transitionDuration: const Duration(milliseconds: 800),
+          transitionCurve: Curves.easeInOut,
+          physics: const BouncingScrollPhysics(),
+          scrollPadding: const EdgeInsets.only(top: 16, bottom: 56),
+          transition: CircularFloatingSearchBarTransition(),
+          actions: [
+            FloatingSearchBarAction(
+              showIfOpened: false,
+              child: CircularButton(
+                icon: const Icon(Icons.search),
+                onPressed: () {},
+              ),
+            ),
+            FloatingSearchBarAction.searchToClear(
+              showIfClosed: false,
+            ),
+          ],
+          hint: watchLocale.searchSpecie,
           hintStyle: TextStyle(
-            color: AppColors.color7,
+            color: AppColors.color8,
             fontSize: ScreenConstraintService(context).minHeight * 1.2,
             fontFamily: GoogleFonts.sourceSansPro().fontFamily,
             fontWeight: FontWeight.w500,
           ),
+          queryStyle: TextStyle(
+            color: AppColors.color8,
+            fontSize: ScreenConstraintService(context).minHeight * 1.5,
+            fontFamily: GoogleFonts.sourceSansPro().fontFamily,
+          ),
+          builder: (context, transition) {
+            return Container();
+          },
         ),
-        onChanged: (val) {},
-      ),
-    );
+        /* TextField(
+            autocorrect: false,
+            autofocus: false,
+            controller: searchController,
+            cursorColor: AppColors.color8,
+            inputFormatters: [
+              FilteringTextInputFormatter.singleLineFormatter,
+              LengthLimitingTextInputFormatter(15),
+            ],
+            keyboardType: TextInputType.text,
+            maxLines: 1,
+            style: TextStyle(
+              color: AppColors.color8,
+              fontSize: ScreenConstraintService(context).minHeight * 1.5,
+              fontFamily: GoogleFonts.sourceSansPro().fontFamily,
+            ),
+            decoration: InputDecoration(
+              suffix: IconButton(
+                padding: EdgeInsets.only(top: 10),
+                icon: Icon(
+                  Icons.search,
+                ),
+                onPressed: () {},
+              ),
+              hintStyle: TextStyle(
+                color: AppColors.color8,
+                fontSize: ScreenConstraintService(context).minHeight * 1.2,
+                fontFamily: GoogleFonts.sourceSansPro().fontFamily,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            onChanged: (val) {},
+          ), */
+      );
+    });
   }
 }

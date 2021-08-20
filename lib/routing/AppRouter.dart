@@ -8,7 +8,7 @@ import 'package:flutter/material.dart';
 
 class AppRouter {
   static Route<dynamic>? onGenerateRoute(RouteSettings settings) {
-    final args = settings.arguments;
+    // final args = settings.arguments;
     switch (settings.name) {
       case AppRoutes.splashRoute:
         return MaterialPageRoute<dynamic>(

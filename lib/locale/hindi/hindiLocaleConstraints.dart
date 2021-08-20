@@ -1,6 +1,9 @@
 import 'package:fawnora/locale/localeConstraints.dart';
+import 'package:fawnora/models/LocaleTypeEnum.dart';
 
 class HindiLocaleConstraints extends LocaleConstraints {
+  LocaleType get localeType => LocaleType.HINDI;
+
   String get welcomeText => 'जी.टी.एफ. में आपका स्वागत है।';
   String get loginText => 'आपका स्वागत है';
   String get signUpText => 'क्रिएट अकाउंट';
@@ -27,4 +30,20 @@ class HindiLocaleConstraints extends LocaleConstraints {
   String get password => 'पासवर्ड';
 
   String get phoneNumber => 'फ़ोन नंबर';
+
+  String get specie => 'प्रजाति';
+
+  String get specieType => 'प्रजाति प्रकार';
+
+  String get subspecie => 'उप-प्रजाति';
+  String get language => 'भाषा';
+
+  String get waitCompletion =>
+      'कृपया प्रतीक्षा करें। रिकॉर्ड जमा किया जा रहा हे।';
+
+  String get aboutApp => 'ऐप की जानकारी';
+  @override
+  String itemNotFound(String item) {
+    return "'$item' जेसी कोई प्रजाति नहीं मिली।";
+  }
 }

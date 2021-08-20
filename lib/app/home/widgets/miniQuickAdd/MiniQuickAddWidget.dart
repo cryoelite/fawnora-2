@@ -14,6 +14,8 @@ class MiniQuickAddWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return ElevatedButton(
       child: Container(
+        width: ScreenConstraintService(context).minWidth * 30,
+        height: ScreenConstraintService(context).minHeight * 13,
         color: AppColors.color11,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -55,13 +57,13 @@ class MiniQuickAddWidget extends StatelessWidget {
               children: [
                 Consumer(
                   builder: (context, watch, _) {
-                    final watchLocale = watch(localeProvider);
+                    final watchLocale = watch(localeConfigProvider);
                     return Padding(
                       padding: EdgeInsets.only(
                         left: ScreenConstraintService(context).minWidth,
                       ),
                       child: Text(
-                        watchLocale.localeObject.quickAddTitle,
+                        watchLocale.quickAddTitle,
                         style: TextStyle(
                           fontFamily: GoogleFonts.sourceSansPro().fontFamily,
                           color: AppColors.color7,

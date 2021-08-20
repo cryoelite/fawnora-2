@@ -15,8 +15,10 @@ class AppColors {
   static const color12 = Color(0xffC4C5D1);
   static const color13 = Color(0xff86fde8);
   static const color14 = Color(0xffacb6e5);
+  static const color15 = Color(0xff33C0B3);
+  static const color16 = Color(0xff1E62DB);
 
-  MaterialColor createMaterialColor(Color color) {
+  static MaterialColor createMaterialColor(Color color) {
     List strengths = <double>[.05];
     final swatch = <int, Color>{};
     final int r = color.red, g = color.green, b = color.blue;

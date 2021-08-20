@@ -56,8 +56,7 @@ class _GoogleMapWidgetState extends State<GoogleMapWidget> {
             zoom: 13,
           ),
           compassEnabled: true,
-          //TODO: Enable at release         myLocationEnabled: true,
-
+          myLocationEnabled: true,
           mapType: MapType.hybrid,
           myLocationButtonEnabled: true,
           onMapCreated: (controller) => _init(controller, context),

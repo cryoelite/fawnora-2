@@ -1,7 +1,6 @@
 import 'package:fawnora/app/home/widgets/DropDown/viewmodels/DropDownViewModel.dart';
 import 'package:fawnora/common_widgets/viewmodels/ButtonIconViewModel.dart';
 import 'package:fawnora/constants/AppColors.dart';
-import 'package:fawnora/locale/LocaleConfig.dart';
 import 'package:fawnora/models/SpecieModel.dart';
 import 'package:fawnora/models/SpecieValueTypeEnum.dart';
 import 'package:fawnora/services/ScreenConstraintService.dart';
@@ -72,6 +71,8 @@ class ButtonIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
+      width: ScreenConstraintService(context).minWidth * 8,
+      height: ScreenConstraintService(context).minHeight * 4.5,
       child: Consumer(builder: (context, watch, _) {
         final SpecieModel? watchProvider = _getProvider(watch);
         return Column(

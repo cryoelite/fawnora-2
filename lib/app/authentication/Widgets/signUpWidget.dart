@@ -1,3 +1,4 @@
+import 'package:fawnora/app/authentication/Widgets/AuthValidator.dart';
 import 'package:fawnora/app/authentication/viewmodels/authViewModel.dart';
 import 'package:fawnora/common_widgets/AuthProgressIndicator.dart';
 import 'package:fawnora/common_widgets/CustomTextField.dart';
@@ -19,6 +20,7 @@ class SignUpWidget extends ConsumerWidget {
   final _passwordController = TextEditingController();
   final _accessCodeController = TextEditingController();
   final _nameController = TextEditingController();
+  final _validator = AuthValidator();
 
   void pushLoginRoute(BuildContext context) {
     context.read(authenticationViewModelProvider.notifier).resetState();
@@ -40,8 +42,7 @@ class SignUpWidget extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, ScopedReader watch) {
-    final watchLocale = watch(localeProvider);
-    final watchAuth = watch(authenticationViewModelProvider.notifier);
+    final watchLocale = watch(localeConfigProvider);
     return Scaffold(
       backgroundColor: AppColors.color2,
       body: SafeArea(
@@ -51,7 +52,7 @@ class SignUpWidget extends ConsumerWidget {
               top: ScreenConstraintService(context).minHeight * 5,
               left: ScreenConstraintService(context).minWidth * 5,
               child: Text(
-                watchLocale.localeObject.signUpText,
+                watchLocale.signUpText,
                 style: TextStyle(
                   fontFamily: GoogleFonts.merriweather().fontFamily,
                   fontSize: ScreenConstraintService(context).minWidth * 5,
@@ -72,8 +73,8 @@ class SignUpWidget extends ConsumerWidget {
                       LengthLimitingTextInputFormatter(6),
                     ],
                     [],
-                    watchLocale.localeObject.accessCode,
-                    errorText: watchAuth.validateAccessCode(
+                    watchLocale.accessCode,
+                    errorText: _validator.validateAccessCode(
                       _accessCodeController.text,
                     ),
                   ),
@@ -92,8 +93,8 @@ class SignUpWidget extends ConsumerWidget {
                             ),
                     ],
                     [],
-                    watchLocale.localeObject.name,
-                    errorText: watchAuth.validateName(
+                    watchLocale.name,
+                    errorText: _validator.validateName(
                       _nameController.text,
                     ),
                   ),
@@ -107,8 +108,8 @@ class SignUpWidget extends ConsumerWidget {
                     [
                       AutofillHints.telephoneNumber,
                     ],
-                    watchLocale.localeObject.phoneNumber,
-                    errorText: watchAuth.validateUsername(
+                    watchLocale.phoneNumber,
+                    errorText: _validator.validateUsername(
                       _usernameController.text,
                     ),
                   ),
@@ -121,9 +122,9 @@ class SignUpWidget extends ConsumerWidget {
                     [
                       AutofillHints.password,
                     ],
-                    watchLocale.localeObject.password,
+                    watchLocale.password,
                     obscure: true,
-                    errorText: watchAuth.validatePassword(
+                    errorText: _validator.validatePassword(
                       _passwordController.text,
                     ),
                   ),
@@ -143,7 +144,7 @@ class SignUpWidget extends ConsumerWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          watchLocale.localeObject.signUp,
+                          watchLocale.signUp,
                           style: TextStyle(
                             fontFamily: GoogleFonts.merriweather().fontFamily,
                             fontSize:
@@ -174,7 +175,7 @@ class SignUpWidget extends ConsumerWidget {
                             .getConvertedWidth(270),
                         height: ScreenConstraintService(context).minHeight * 4,
                         child: Text(
-                          watchAuth.errorBuilder(watchAuthProvider) ?? "",
+                          _validator.errorBuilder(watchAuthProvider) ?? "",
                           style: TextStyle(
                             color: Colors.red,
                             fontFamily: GoogleFonts.sourceSansPro().fontFamily,
@@ -195,7 +196,7 @@ class SignUpWidget extends ConsumerWidget {
                             ),
                           ),
                           child: Text(
-                            watchLocale.localeObject.login,
+                            watchLocale.login,
                             style: TextStyle(
                               decoration: TextDecoration.underline,
                               fontFamily:

@@ -1,6 +1,9 @@
 import 'package:fawnora/locale/localeConstraints.dart';
+import 'package:fawnora/models/LocaleTypeEnum.dart';
 
 class EnglishLocaleConstraints extends LocaleConstraints {
+  LocaleType get localeType => LocaleType.ENGLISH;
+
   String get welcomeText => 'Data Collection made easy.';
   String get loginText => 'Welcome';
   String get signUpText => 'Create Account';
@@ -27,4 +30,18 @@ class EnglishLocaleConstraints extends LocaleConstraints {
   String get password => 'Password';
 
   String get phoneNumber => 'Phone Number';
+
+  String get specie => 'Specie';
+
+  String get specieType => 'SpecieType';
+
+  String get subspecie => 'SubSpecie';
+  String get language => 'Language';
+
+  String get waitCompletion => 'Please wait while record is being stored.';
+  String get aboutApp => 'About App';
+  @override
+  String itemNotFound(String item) {
+    return "'$item' couldn't be found.";
+  }
 }

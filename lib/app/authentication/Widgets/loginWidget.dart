@@ -1,3 +1,4 @@
+import 'package:fawnora/app/authentication/Widgets/AuthValidator.dart';
 import 'package:fawnora/app/authentication/viewmodels/authViewModel.dart';
 import 'package:fawnora/common_widgets/AuthProgressIndicator.dart';
 import 'package:fawnora/common_widgets/CustomTextField.dart';
@@ -14,6 +15,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 class LoginWidget extends StatelessWidget {
   LoginWidget({Key? key}) : super(key: key);
+  final _validator = AuthValidator();
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
 
@@ -46,9 +48,9 @@ class LoginWidget extends StatelessWidget {
               left: ScreenConstraintService(context).minWidth * 5,
               child: Consumer(
                 builder: (context, watch, _) {
-                  final watchLocale = watch(localeProvider);
+                  final watchLocale = watch(localeConfigProvider);
                   return Text(
-                    watchLocale.localeObject.loginText,
+                    watchLocale.loginText,
                     style: TextStyle(
                       fontFamily: GoogleFonts.merriweather().fontFamily,
                       fontSize: ScreenConstraintService(context).minWidth * 5,
@@ -62,7 +64,7 @@ class LoginWidget extends StatelessWidget {
               top: ScreenConstraintService(context).minHeight * 21,
               left: ScreenConstraintService(context).minWidth * 7,
               child: Consumer(builder: (context, watch, _) {
-                final watchLocale = watch(localeProvider);
+                final watchLocale = watch(localeConfigProvider);
 
                 return Column(
                   children: [
@@ -76,10 +78,9 @@ class LoginWidget extends StatelessWidget {
                       [
                         AutofillHints.telephoneNumber,
                       ],
-                      watchLocale.localeObject.phoneNumber,
-                      errorText: context
-                          .read(authenticationViewModelProvider.notifier)
-                          .validateUsername(_usernameController.text),
+                      watchLocale.phoneNumber,
+                      errorText:
+                          _validator.validateUsername(_usernameController.text),
                     ),
                     CustomTextField(
                       _passwordController,
@@ -90,7 +91,7 @@ class LoginWidget extends StatelessWidget {
                       [
                         AutofillHints.password,
                       ],
-                      watchLocale.localeObject.password,
+                      watchLocale.password,
                       obscure: true,
                     ),
                   ],
@@ -111,9 +112,9 @@ class LoginWidget extends StatelessWidget {
                       children: [
                         Consumer(
                           builder: (context, watch, _) {
-                            final watchLocale = watch(localeProvider);
+                            final watchLocale = watch(localeConfigProvider);
                             return Text(
-                              watchLocale.localeObject.login,
+                              watchLocale.login,
                               style: TextStyle(
                                 fontFamily:
                                     GoogleFonts.merriweather().fontFamily,
@@ -143,14 +144,12 @@ class LoginWidget extends StatelessWidget {
                     Consumer(builder: (context, watch, _) {
                       final watchAuthProvider =
                           watch(authenticationViewModelProvider);
-                      final authModel =
-                          watch(authenticationViewModelProvider.notifier);
                       return Container(
                         width: ScreenConstraintService(context)
                             .getConvertedWidth(270),
                         height: ScreenConstraintService(context).minHeight * 4,
                         child: Text(
-                          authModel.errorBuilder(watchAuthProvider) ?? "",
+                          _validator.errorBuilder(watchAuthProvider) ?? "",
                           style: TextStyle(
                             color: Colors.red,
                             fontFamily: GoogleFonts.sourceSansPro().fontFamily,
@@ -172,9 +171,9 @@ class LoginWidget extends StatelessWidget {
                           ),
                           child: Consumer(
                             builder: (context, watch, _) {
-                              final watchLocale = watch(localeProvider);
+                              final watchLocale = watch(localeConfigProvider);
                               return Text(
-                                watchLocale.localeObject.signUp,
+                                watchLocale.signUp,
                                 style: TextStyle(
                                   decoration: TextDecoration.underline,
                                   fontFamily:
@@ -201,9 +200,9 @@ class LoginWidget extends StatelessWidget {
                           ),
                           child: Consumer(
                             builder: (context, watch, _) {
-                              final watchLocale = watch(localeProvider);
+                              final watchLocale = watch(localeConfigProvider);
                               return Text(
-                                watchLocale.localeObject.forgotPassword,
+                                watchLocale.forgotPassword,
                                 style: TextStyle(
                                   decoration: TextDecoration.underline,
                                   fontFamily:
@@ -227,7 +226,7 @@ class LoginWidget extends StatelessWidget {
                 ),
               ),
             ),
-            Positioned(
+            /* Positioned(
               bottom: 0,
               left: 0,
               child: Container(
@@ -243,7 +242,7 @@ class LoginWidget extends StatelessWidget {
                   },
                 ),
               ),
-            ),
+            ), */
           ],
         ),
       ),

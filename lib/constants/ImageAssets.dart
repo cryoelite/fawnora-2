@@ -10,6 +10,7 @@ class ImageAssets {
   static const floraIcon = 'assets/Flora.png';
   static const disturbanceIcon = 'assets/Disturbance.png';
   static const tickIcon = 'assets/tickMark.png';
+  static const launcherIcon = 'assets/launcher_icon.png';
 
   static const flora_grass = 'assets/Flora_Grass.png';
   static const flora_shrub = 'assets/Flora_Shrub.png';

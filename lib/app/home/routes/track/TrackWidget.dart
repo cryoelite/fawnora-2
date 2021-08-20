@@ -13,14 +13,7 @@ import 'package:fawnora/services/ScreenConstraintService.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class TrackWidget extends StatefulWidget {
-  const TrackWidget({Key? key}) : super(key: key);
-
-  @override
-  _TrackWidgetState createState() => _TrackWidgetState();
-}
-
-class _TrackWidgetState extends State<TrackWidget> {
+class TrackWidget extends StatelessWidget {
   double _googleMapHeightSelector(
       BuildContext context, StartStopButtonEnum buttonEnum) {
     if (buttonEnum == StartStopButtonEnum.STOP)
@@ -58,7 +51,7 @@ class _TrackWidgetState extends State<TrackWidget> {
     );
   }
 
-  Widget _showStack(Widget _child) {
+  Widget _showStack(Widget _child, BuildContext context) {
     return Container(
       width: ScreenConstraintService(context).maxWidth,
       height: ScreenConstraintService(context).maxHeight,
@@ -139,7 +132,14 @@ class _TrackWidgetState extends State<TrackWidget> {
           },
         ),
         Consumer(
-          builder: (context, watch, _) {
+          child: _showStack(
+            Hero(
+              tag: HeroTags.assistiveAddTag,
+              child: AssistiveAddWidget(),
+            ),
+            context,
+          ),
+          builder: (context, watch, child) {
             final watchQuick = watch(toShowQuickAddWidgetProvider);
             final watchAssistive = watch(toShowAssistiveAddWidgetProvider);
 
@@ -148,15 +148,11 @@ class _TrackWidgetState extends State<TrackWidget> {
                 tag: HeroTags.quickAddTag,
                 child: _showStack(
                   QuickAddWidget(),
+                  context,
                 ),
               );
             } else if (watchAssistive) {
-              return _showStack(
-                Hero(
-                  tag: HeroTags.assistiveAddTag,
-                  child: AssistiveAddWidget(),
-                ),
-              );
+              return child!;
             } else {
               return Container();
             }
