@@ -5,14 +5,14 @@ import 'package:fawnora/models/EncryptedUserModel.dart';
 import 'package:fawnora/models/UnencryptedUserModel.dart';
 import 'package:fawnora/services/DeviceID.dart';
 import 'package:fawnora/services/FirestoreService.dart';
-import 'package:fawnora/services/WatchManService.dart';
+import 'package:fawnora/app/InitializeApp/viewmodels/WatchManViewModel.dart';
 import 'package:fawnora/services/HashingService.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final firebaseAuthProvider = Provider<AuthService>((ref) {
   dev.log("Auth Provider started", level: 800);
-  final watchman = ref.read(watchManProvider.notifier);
+  final watchman = ref.read(watchManViewModelProvider.notifier);
   final watchFirestore = ref.read(firestoreProvider);
   return AuthService(watchFirestore, watchman);
 });

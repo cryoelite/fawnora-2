@@ -18,7 +18,44 @@ final localStorageProvider = Provider<LocalStorageService>((_) {
 
 class LocalStorageService {
   final String _className = 'LocalStorage';
+  final String _tempFileSuffix = 'TEMP%';
   final _dataSanitizer = DataSanitizerService();
+
+  Future<void> storeLoginCredentials(String username, String password) async {
+    dev.log('$_className: Storing Login data', level: 800);
+    final box = await Hive.openBox(LocalStorageBoxes.preferencesBox);
+    box.put(LocalStorageKeys.userLoginData, {username: password});
+    await box.close();
+    dev.log('$_className: Storing Login data complete', level: 800);
+  }
+
+  Future<MapEntry<String, String>?> retrieveLoginCredentials() async {
+    dev.log('$_className: Retrieving Login data', level: 800);
+    final box = await Hive.openBox(LocalStorageBoxes.preferencesBox);
+    final data = await box.get(LocalStorageKeys.userLoginData);
+    await box.close();
+    if (data != null && data is Map) {
+      final userName = data.keys.first.toString();
+      final password = data.values.first.toString();
+      dev.log('$_className: Retrieving Login data complete', level: 800);
+
+      return MapEntry(userName, password);
+    } else {
+      dev.log(
+          '$_className: Retrieving Login data failed as credentials do not exist.',
+          level: 800);
+
+      return null;
+    }
+  }
+
+  Future<void> clearLoginCredentials() async {
+    dev.log('$_className: Clearing Login data', level: 800);
+    final box = await Hive.openBox(LocalStorageBoxes.preferencesBox);
+    await box.clear();
+    await box.close();
+    dev.log('$_className: Clearing Login data complete', level: 800);
+  }
 
   Future<void> storeLanguage(LocaleType localeType) async {
     dev.log('$_className: Storing locale data', level: 800);
@@ -38,6 +75,24 @@ class LocalStorageService {
     dev.log('$_className: Retrieval of locale complete', level: 800);
 
     return value;
+  }
+
+  Future<void> storeAppVersion(String version) async {
+    dev.log('$_className: Storing App version', level: 800);
+    final box = await Hive.openBox(LocalStorageBoxes.appDetailsBox);
+    await box.put(LocalStorageKeys.appVersion, version);
+    await box.close();
+    dev.log('$_className: Storing App version complete', level: 800);
+  }
+
+  Future<String?> retrieveAppVersion() async {
+    dev.log('$_className: Storing App version', level: 800);
+    final box = await Hive.openBox(LocalStorageBoxes.appDetailsBox);
+    final version = await box.get(LocalStorageKeys.appVersion);
+    await box.close();
+
+    dev.log('$_className: Storing App version complete', level: 800);
+    return version;
   }
 
   Future<void> storeFirestoreversion(String mainDataVersion) async {
@@ -221,8 +276,8 @@ class LocalStorageService {
     return mapData;
   }
 
-  Future<void> resetLocalDbBoxes() async {
-    dev.log('$_className: Resetting local boxes', level: 800);
+  Future<void> resetLocalDbFirestore() async {
+    dev.log('$_className: Resetting local boxes for local firestore data', level: 800);
 
     for (var value in SpecieType.values) {
       final box = await _getSubSpecieBox(value);
@@ -233,14 +288,19 @@ class LocalStorageService {
     await box.clear();
     await box.close();
 
-    final dir = await getTemporaryDirectory();
-    await dir.delete(recursive: true);
-
     final box3 = await Hive.openBox(LocalStorageBoxes.imageMap);
     await box3.clear();
     await box3.close();
 
-    dev.log('$_className: Resetting local boxes complete', level: 800);
+    dev.log('$_className: Resetting local boxes for local firestore complete', level: 800);
+  }
+
+  Future<void> resetLocalDbImageStorage() async {
+    dev.log('$_className: Resetting image data', level: 800);
+
+    await clearNormalImages();
+
+    dev.log('$_className: Resetting image data complete', level: 800);
   }
 
   Future<Box<dynamic>> _getSubSpecieBox(SpecieType type) async {
@@ -277,6 +337,77 @@ class LocalStorageService {
     return file;
   }
 
+  Future<void> clearNormalImages() async {
+    dev.log('$_className: Clearing normal images', level: 800);
+    final dir = await getTemporaryDirectory();
+    final fileList = dir.list();
+    await _fileIterator(fileList,
+        optionalSuffix: _tempFileSuffix, includeOptionalSuffixAtStart: false);
+    dev.log('$_className: Clearing normal images complete', level: 800);
+  }
+
+  Future<void> clearCacheImages() async {
+    dev.log('$_className: Clearing cache images', level: 800);
+    final dir = await getTemporaryDirectory();
+    final fileList = dir.list();
+    await _fileIterator(fileList,
+        optionalSuffix: _tempFileSuffix, includeOptionalSuffixAtStart: true);
+    dev.log('$_className: Clearing cache images complete', level: 800);
+  }
+
+  Future<void> clearAllImages() async {
+    dev.log('$_className: Clearing All images', level: 800);
+    final dir = await getTemporaryDirectory();
+    final fileList = dir.list();
+    await _fileIterator(fileList);
+    dev.log('$_className: Clearing All images complete', level: 800);
+  }
+
+  Future<void> _fileIterator(
+    Stream<FileSystemEntity> stream, {
+    bool includeOptionalSuffixAtStart = false,
+    String? optionalSuffix,
+  }) async {
+    await for (var item in stream) {
+      final itemStat = await item.stat();
+      final itemType = itemStat.type;
+      if (itemType == FileSystemEntityType.directory) {
+        final uri = item.uri;
+        final dir = Directory.fromUri(uri);
+        final dirContents = dir.list();
+        await _fileIterator(
+          dirContents,
+          optionalSuffix: optionalSuffix,
+          includeOptionalSuffixAtStart: includeOptionalSuffixAtStart,
+        );
+      } else if (itemType == FileSystemEntityType.file) {
+        final filePath = item.path.split('/');
+        final fileName = filePath[filePath.length - 1];
+        if (optionalSuffix != null) {
+          if (includeOptionalSuffixAtStart) {
+            if (fileName.startsWith(optionalSuffix)) {
+              final uri = item.uri;
+              await _deleteFile(uri);
+            }
+          } else {
+            if (!fileName.startsWith(optionalSuffix)) {
+              final uri = item.uri;
+              await _deleteFile(uri);
+            }
+          }
+        } else {
+          final uri = item.uri;
+          await _deleteFile(uri);
+        }
+      }
+    }
+  }
+
+  Future<void> _deleteFile(Uri uri) async {
+    final file = File.fromUri(uri);
+    await file.delete(recursive: true);
+  }
+
   Future<void> storeImage(Uint8List imageData, String filename) async {
     dev.log('$_className: Store Image', level: 800);
 
@@ -286,6 +417,18 @@ class LocalStorageService {
     await file.writeAsBytes(imageData);
 
     dev.log('$_className: Store Image complete', level: 800);
+  }
+
+  Future<void> storeCacheImage(Uint8List imageData, String filename) async {
+    dev.log('$_className: Storing Image in cache', level: 800);
+    print("filename is $filename");
+    final convFilename =
+        _tempFileSuffix + _dataSanitizer.encodeString(filename);
+    final file = await _getPath(convFilename);
+    await file.create(recursive: true);
+    await file.writeAsBytes(imageData);
+
+    dev.log('$_className: Store Image in cache complete', level: 800);
   }
 
   Future<Uint8List?> retrieveImage(String filename) async {
@@ -308,7 +451,27 @@ class LocalStorageService {
     return data;
   }
 
-  Future<bool> checkImage(String filename) async {
+  Future<Uint8List?> retrieveCacheImage(String filename) async {
+    dev.log('$_className: Retrieving Image from cache', level: 800);
+    final convFilename =
+        _tempFileSuffix + _dataSanitizer.encodeString(filename);
+    final file = await _getPath(convFilename);
+    Uint8List data;
+    if (await file.exists()) {
+      data = await file.readAsBytes();
+    } else {
+      dev.log('$_className: For the given file, cache does not exist',
+          level: 800);
+
+      return null;
+    }
+
+    dev.log('$_className: Retrieving Image from cache Complete', level: 800);
+
+    return data;
+  }
+
+  /* Future<bool> checkImage(String filename) async {
     dev.log('$_className: Checking Image', level: 800);
     final convFilename = _dataSanitizer.encodeString(filename);
 
@@ -319,7 +482,7 @@ class LocalStorageService {
         level: 800);
 
     return status;
-  }
+  } */
 
   Future<void> storeImageMap(Map<String, Map<String, String>>? imageMap) async {
     dev.log('$_className: Storing Image Map', level: 800);

@@ -2,6 +2,8 @@ import 'package:fawnora/app/authentication/Widgets/AuthValidator.dart';
 import 'package:fawnora/models/AuthEnum.dart';
 import 'package:fawnora/models/UnencryptedUserModel.dart';
 import 'package:fawnora/services/AuthService.dart';
+import 'package:fawnora/services/DataSanitizerService.dart';
+import 'package:fawnora/services/LocalStorageService.dart';
 import 'package:fawnora/services/TransectService.dart';
 import 'package:fawnora/services/UserService.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -17,6 +19,17 @@ class AuthenticationViewModel extends StateNotifier<AuthEnum> {
   ) : super(AuthEnum.NONE);
   final ProviderReference _providerReference;
 
+  Future<AuthEnum> autoLogin(MapEntry<String, String> userData) async {
+    final username = DataSanitizerService().decodeString(userData.key);
+    final password = DataSanitizerService().decodeString(userData.value);
+    await signIn(username, password);
+    return state;
+  }
+
+  Future<void> signOut() async {
+    await _providerReference.read(localStorageProvider).clearLoginCredentials();
+  }
+
   Future<void> signIn(String username, String password) async {
     state = AuthEnum.LOADING;
     if (_validator.isUsernameGood(username) &&
@@ -26,6 +39,8 @@ class AuthenticationViewModel extends StateNotifier<AuthEnum> {
       if (response != null) {
         _providerReference.watch(userServiceProvider).userModel = response;
         await _providerReference.read(transectServiceProvider).init(username);
+        await _storeAutoLoginData(username, password);
+
         state = AuthEnum.SUCCESS;
 
         return;
@@ -60,6 +75,8 @@ class AuthenticationViewModel extends StateNotifier<AuthEnum> {
       } else {
         _providerReference.watch(userServiceProvider).userModel = response;
         await _providerReference.read(transectServiceProvider).init(username);
+
+        await _storeAutoLoginData(username, password);
         state = AuthEnum.SUCCESS;
         await watchAuth.assignUserToAccessCode(accessCode, username);
 
@@ -69,6 +86,14 @@ class AuthenticationViewModel extends StateNotifier<AuthEnum> {
       state = AuthEnum.INCOMPLETE_FORM;
       return;
     }
+  }
+
+  Future<void> _storeAutoLoginData(String username, String password) async {
+    final convUsername = DataSanitizerService().encodeString(username);
+    final convPassword = DataSanitizerService().encodeString(password);
+    await _providerReference
+        .read(localStorageProvider)
+        .storeLoginCredentials(convUsername, convPassword);
   }
 
   void resetState() {

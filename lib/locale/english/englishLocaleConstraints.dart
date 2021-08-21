@@ -40,6 +40,10 @@ class EnglishLocaleConstraints extends LocaleConstraints {
 
   String get waitCompletion => 'Please wait while record is being stored.';
   String get aboutApp => 'About App';
+  String get inadequatePerms =>
+      'Inadequate permissions granted. App cannot start.';
+  String get signOut => 'Sign Out';
+
   @override
   String itemNotFound(String item) {
     return "'$item' couldn't be found.";

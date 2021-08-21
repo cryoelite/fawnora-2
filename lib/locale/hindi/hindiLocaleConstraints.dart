@@ -42,6 +42,12 @@ class HindiLocaleConstraints extends LocaleConstraints {
       'कृपया प्रतीक्षा करें। रिकॉर्ड जमा किया जा रहा हे।';
 
   String get aboutApp => 'ऐप की जानकारी';
+
+  String get inadequatePerms =>
+      'अपर्याप्त अनुमति दी गई। ऐप प्रारंभ नहीं हो सकती।';
+
+  String get signOut => 'साइन आउट';
+
   @override
   String itemNotFound(String item) {
     return "'$item' जेसी कोई प्रजाति नहीं मिली।";

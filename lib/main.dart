@@ -1,4 +1,4 @@
-import 'package:fawnora/InitializeApp.dart';
+import 'package:fawnora/app/InitializeApp/InitializeApp.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:fawnora/app/splash/splashRoute.dart';

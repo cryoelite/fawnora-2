@@ -14,19 +14,16 @@ class AppInitializerService {
   final ProviderReference _ref;
   AppInitializerService(this._ref);
 
-  Future<bool> init() async {
+  Future<void> init() async {
     dev.log('$_className: Initializing', level: 800);
 
-    final status = await _statuses();
     final syncService = _ref.read(syncerServiceProvider);
     await syncService.init();
 
     dev.log('$_className: Initializing complete', level: 800);
-
-    return status;
   }
 
-  Future<bool> _statuses() async {
+  Future<bool> permStatus() async {
     dev.log('$_className: Getting statuses', level: 700);
 
     try {

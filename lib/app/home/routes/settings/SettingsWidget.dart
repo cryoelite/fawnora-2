@@ -1,5 +1,6 @@
 import 'package:fawnora/app/home/widgets/About/AboutWidget.dart';
 import 'package:fawnora/app/home/widgets/Language/LanugageWidget.dart';
+import 'package:fawnora/app/home/widgets/SignOut/SignOutWidget.dart';
 import 'package:fawnora/services/ScreenConstraintService.dart';
 import 'package:flutter/material.dart';
 
@@ -18,6 +19,7 @@ class SettingsWidget extends StatelessWidget {
         children: [
           LanguageWidget(),
           AboutWidget(),
+          SignOutWidget(),
         ],
       ),
     );

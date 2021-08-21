@@ -9,6 +9,7 @@ class LocalStorageBoxes {
   static const fauna_hindiBox = 'fauna_hindiBox';
   static const disturbance_hindiBox = 'disturbance_hindiBox';
   static const imageMap = 'imageMap';
+  static const appDetailsBox = 'appDetailsBox';
 }
 
 class LocalStoragePaths {

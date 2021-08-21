@@ -22,7 +22,6 @@ class SubmitDataViewModel extends StateNotifier<bool> {
 
   Future<String> quickAddSubmit() async {
     state = true;
-
     final watchLocale = _providerReference.read(localeConfigProvider);
 
     final language =

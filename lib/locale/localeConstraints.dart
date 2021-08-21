@@ -30,5 +30,7 @@ abstract class LocaleConstraints {
   String get language;
   String get waitCompletion;
   String get aboutApp;
+  String get inadequatePerms;
+  String get signOut;
   String itemNotFound(String item);
 }

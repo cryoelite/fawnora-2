@@ -1,24 +1,30 @@
 import 'dart:async';
 import 'dart:developer' as dev;
 
+import 'package:fawnora/app/InitializeApp/viewmodels/ResetAppViewModel.dart';
 import 'package:fawnora/constants/FirestoreDocuments.dart';
 import 'package:fawnora/services/FirestoreService.dart';
 import 'package:flutter/material.dart' show Key, UniqueKey;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-final watchManProvider = StateNotifierProvider<WatchManService, Key>((ref) {
+final watchManViewModelProvider =
+    StateNotifierProvider<WatchManService, Key>((ref) {
   dev.log("WatchMan Provider Started", level: 800);
   final watchFirestore = ref.read(firestoreProvider);
-  return WatchManService(watchFirestore);
+  final watchResetApp = ref.read(resetAppProvider.notifier);
+  return WatchManService(watchFirestore, watchResetApp);
 });
 
 class WatchManService extends StateNotifier<Key> {
   StreamSubscription? _streamSubscription;
   FirestoreService _firestoreService;
-  WatchManService(this._firestoreService) : super(UniqueKey());
+  ResetAppViewModel _resetAppViewModel;
+  WatchManService(this._firestoreService, this._resetAppViewModel)
+      : super(UniqueKey());
 
   void bumpState() {
+    _resetAppViewModel.resetApp();
     state = UniqueKey();
   }
 

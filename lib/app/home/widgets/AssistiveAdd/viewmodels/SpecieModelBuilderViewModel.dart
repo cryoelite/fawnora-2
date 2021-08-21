@@ -35,8 +35,7 @@ class SpecieModelBuilderViewModel extends StateNotifier<List<SpecieModel>?> {
     this._localeType,
   ) : super(null);
 
-  Future<void> 
-  initList() async {
+  Future<void> initList() async {
     if (state == null) {
       final specieData =
           await _localStorageService.retrieveAllSubspecieData(_localeType);
@@ -76,9 +75,11 @@ class SpecieModelBuilderViewModel extends StateNotifier<List<SpecieModel>?> {
       String specie, Map<String, Map<String, String>?> imageMap) async {
     final _filename = _checkImageMap(specie, imageMap);
     Uint8List? data;
-
     if (_filename != null) {
       data = await _localStorageService.retrieveImage(_filename);
+      if (data == null) {
+        data = await _localStorageService.retrieveCacheImage(_filename);
+      }
     }
     return data;
   }

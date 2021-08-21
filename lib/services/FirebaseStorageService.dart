@@ -66,10 +66,16 @@ class FirebaseStorageService {
         for (final image in _refData.items) {
           final name = image.name;
           if (_fileTypeChecker(name)) {
-            final url = await image.getDownloadURL();
-            if (!await _localStorageService.checkImage(name)) {
+            final localFile =
+                await _localStorageService.retrieveCacheImage(name);
+            if (localFile == null) {
+              final url = await image.getDownloadURL();
+
               final data = await compute(_getImage, url);
               items[name] = data;
+              await _localStorageService.storeCacheImage(data, name);
+            } else {
+              items[name] = localFile;
             }
           }
         }

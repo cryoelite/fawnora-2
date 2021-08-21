@@ -191,7 +191,7 @@ class LoginWidget extends StatelessWidget {
                             pushsignUpRoute(context);
                           },
                         ),
-                        TextButton(
+                        /* TextButton(
                           style: ButtonStyle(
                             padding:
                                 MaterialStateProperty.all<EdgeInsetsGeometry>(
@@ -217,9 +217,9 @@ class LoginWidget extends StatelessWidget {
                             },
                           ),
                           onPressed: () {
-                            //TODO: Forgot Password
+                            
                           },
-                        ),
+                        ), */
                       ],
                     ),
                   ],

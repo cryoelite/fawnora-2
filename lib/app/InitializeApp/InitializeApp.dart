@@ -2,7 +2,7 @@ import 'package:fawnora/services/SystemOverlayOverrides.dart';
 import 'package:fawnora/models/LocaleTypeEnum.dart';
 import 'package:fawnora/locale/LocaleConfig.dart';
 import 'package:fawnora/services/LocalStorageService.dart';
-import 'package:fawnora/services/WatchManService.dart';
+import 'package:fawnora/app/InitializeApp/viewmodels/WatchManViewModel.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -33,7 +33,7 @@ class InitializeApp {
         child: Consumer(
             child: mainApp,
             builder: (context, watch, child) {
-              final watchWatchMan = watch(watchManProvider);
+              final watchWatchMan = watch(watchManViewModelProvider);
 
               return KeyedSubtree(
                 key: watchWatchMan,

@@ -5,6 +5,7 @@ import 'package:fawnora/services/FirebaseStorageService.dart';
 import 'package:fawnora/services/FirestoreService.dart';
 import 'package:fawnora/services/LocalStorageService.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 final syncerServiceProvider = Provider<SyncLocalAndFireStoreService>((ref) {
   final watchLocal = ref.read(localStorageProvider);
@@ -30,31 +31,44 @@ class SyncLocalAndFireStoreService {
   Future<void> init() async {
     dev.log('$_className: Initializing', level: 800);
 
-    final result = await _checkVersion();
-    print("The result is $result");
+    final appVerResult = await _checkAppVersion();
+    final firestoreVerResult = await _checkVersionFirestore();
+    final imageVerResult = await _checkVersionImageData();
 
-    if (!result.key) {
-      await _resetLocalDb();
+    dev.log(
+        "Versions are same ? firestore: $firestoreVerResult, imageData: $imageVerResult, appVer: $appVerResult");
+    if (!firestoreVerResult.key) {
+      await _localStorageService.resetLocalDbFirestore();
 
       final firestoreSubSpecieData =
           await _firestoreService.getSubspecieDocuments();
       await _storeSubSpecieLocally(firestoreSubSpecieData);
 
-      final mainVer = _getConvVersion(result.value, 'main');
-      await _storeFirestoreVersion(mainVer);
-      final imageVer = _getConvVersion(result.value, 'image');
+      await _storeFirestoreVersion(firestoreVerResult.value);
 
-      _manageImageData(imageVer);
+      final imageMap = await _firestoreService.getImageMap();
+      await _storeImageMapLocally(imageMap);
+    }
+
+    if (!imageVerResult.key) {
+      await _localStorageService.resetLocalDbImageStorage();
+
+      _manageImageData(imageVerResult.value);
+    }
+
+    if (!appVerResult.key) {
+      await _storeAppVersion(appVerResult.value);
     }
 
     dev.log('$_className: Initializing complete', level: 800);
   }
 
+  Future<void> _storeAppVersion(String currentVer) async {
+    await _localStorageService.storeAppVersion(currentVer);
+  }
+
   void _manageImageData(String imageVer) async {
     dev.log('$_className: Storing image data', level: 800);
-
-    final imageMap = await _firestoreService.getImageMap();
-    await _storeImageMapLocally(imageMap);
 
     final imageData = await _firebaseStorageService.getAllImages();
     await _storeImagesLocally(imageData);
@@ -62,6 +76,8 @@ class SyncLocalAndFireStoreService {
     await _storeFirebaseStorageVersion(imageVer).then((_) {
       dev.log('$_className: Storing image data complete', level: 800);
     });
+
+    await _localStorageService.clearCacheImages();
   }
 
   Future<void> _storeImagesLocally(Map<String, Uint8List> imageData) async {
@@ -111,41 +127,49 @@ class SyncLocalAndFireStoreService {
         level: 700);
   }
 
-  Future<void> _resetLocalDb() async {
-    dev.log('$_className: Resetting local boxes', level: 700);
-
-    await _localStorageService.resetLocalDbBoxes();
-
-    dev.log('$_className: Resetting local boxes complete', level: 700);
-  }
-
   String _getConvVersion(Map<String, String?> verDoc, String type) {
     final version = verDoc.keys
         .firstWhere((element) => element.toLowerCase().contains(type));
     return verDoc[version] ?? "0";
   }
 
-  Future<MapEntry<bool, Map<String, String>>> _checkVersion() async {
+  Future<String> _getCurrentAppVersion() async {
+    final pkgInfo = await PackageInfo.fromPlatform();
+    final version = pkgInfo.version;
+    return version;
+  }
+
+  Future<MapEntry<bool, String>> _checkVersionFirestore() async {
     dev.log('$_className: Checking versions', level: 700);
 
     final localVersions = await _localStorageService.retrieveLocalVersions();
+
     final _firestoreVersions = await _firestoreService.getVersions();
+    final firestoreMainDataVer = _getConvVersion(_firestoreVersions, 'main');
+
     if (localVersions.values.any((element) => element == null)) {
-      return MapEntry(false, _firestoreVersions);
+      return MapEntry(false, firestoreMainDataVer);
+    }
+    final localMainDataVer = _getConvVersion(localVersions, 'main');
+    return MapEntry(
+        firestoreMainDataVer == localMainDataVer, firestoreMainDataVer);
+  }
+
+  Future<MapEntry<bool, String>> _checkAppVersion() async {
+    final currentAppVersion = await _getCurrentAppVersion();
+    final localAppVersion =
+        await _localStorageService.retrieveAppVersion() ?? "0";
+    return MapEntry(currentAppVersion == localAppVersion, currentAppVersion);
+  }
+
+  Future<MapEntry<bool, String>> _checkVersionImageData() async {
+    final _firestoreVersions = await _firestoreService.getVersions();
+    final firestoreImageVer = _getConvVersion(_firestoreVersions, 'image');
+    final localVersions = await _localStorageService.retrieveLocalVersions();
+    if (localVersions.values.any((element) => element == null)) {
+      return MapEntry(false, firestoreImageVer);
     }
     final localImageVer = _getConvVersion(localVersions, 'image');
-    final localMainDataVer = _getConvVersion(localVersions, 'main');
-    final firestoreImageVer = _getConvVersion(_firestoreVersions, 'image');
-    final firestoreMainDataVer = _getConvVersion(_firestoreVersions, 'main');
-    if (localImageVer == firestoreImageVer &&
-        localMainDataVer == firestoreMainDataVer) {
-      dev.log('$_className: Versions are same', level: 700);
-
-      return MapEntry(true, _firestoreVersions);
-    } else {
-      dev.log('$_className: Versions are not same', level: 700);
-
-      return MapEntry(false, _firestoreVersions);
-    }
+    return MapEntry(localImageVer == firestoreImageVer, firestoreImageVer);
   }
 }
