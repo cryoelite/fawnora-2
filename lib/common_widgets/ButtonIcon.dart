@@ -81,22 +81,20 @@ class ButtonIcon extends StatelessWidget {
             AnimatedContainer(
               duration: Duration(milliseconds: 300),
               width: ScreenConstraintService(context).minWidth * 5.3,
-              height: ScreenConstraintService(context).minHeight * 3,
+              height: ScreenConstraintService(context).minHeight * 2.6,
+              clipBehavior: Clip.hardEdge,
               decoration: BoxDecoration(
-                border: _getBorder(watchProvider, context),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(16),
-                child: IconButton(
-                  padding: EdgeInsets.zero,
-                  onPressed: () {
-                    _onPressed(context);
-                  },
-                  icon: Image.asset(
-                    _specieModel.localImageAsset,
-                    fit: BoxFit.scaleDown,
-                  ),
+                  border: _getBorder(watchProvider, context),
+                  borderRadius: BorderRadius.circular(20),
+                  color: Colors.white),
+              child: IconButton(
+                padding: EdgeInsets.zero,
+                onPressed: () {
+                  _onPressed(context);
+                },
+                icon: Image.asset(
+                  _specieModel.localImageAsset,
+                  fit: BoxFit.scaleDown,
                 ),
               ),
             ),

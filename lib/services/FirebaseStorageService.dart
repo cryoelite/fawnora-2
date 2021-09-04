@@ -1,7 +1,6 @@
 import 'dart:developer' as dev;
 import 'dart:typed_data';
 
-import 'package:fawnora/constants/FirebaseStorageFolders.dart';
 import 'package:fawnora/services/LocalStorageService.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
@@ -58,26 +57,22 @@ class FirebaseStorageService {
 
   Future<Map<String, Uint8List>> _getItems() async {
     final Map<String, Uint8List> items = Map();
-    for (var item in FirebaseStorageFolders.folderStructure.entries) {
-      for (final folder in item.value) {
-        final _path = '/${item.key}/$folder/';
-        final _refData = await _instance.ref(_path).list();
 
-        for (final image in _refData.items) {
-          final name = image.name;
-          if (_fileTypeChecker(name)) {
-            final localFile =
-                await _localStorageService.retrieveCacheImage(name);
-            if (localFile == null) {
-              final url = await image.getDownloadURL();
+    final _path = '/Species/';
+    final _refData = await _instance.ref(_path).list();
 
-              final data = await compute(_getImage, url);
-              items[name] = data;
-              await _localStorageService.storeCacheImage(data, name);
-            } else {
-              items[name] = localFile;
-            }
-          }
+    for (final image in _refData.items) {
+      final name = image.name;
+      if (_fileTypeChecker(name)) {
+        final localFile = await _localStorageService.retrieveCacheImage(name);
+        if (localFile == null) {
+          final url = await image.getDownloadURL();
+
+          final data = await compute(_getImage, url);
+          items[name] = data;
+          await _localStorageService.storeCacheImage(data, name);
+        } else {
+          items[name] = localFile;
         }
       }
     }

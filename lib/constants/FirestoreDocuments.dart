@@ -25,6 +25,8 @@ class FirestoreDocumentsAndFields {
   static const userTime = 'timestamp';
   static const userTransect = 'transect';
   static const userEntryLanguage = 'language';
+  static const userImageName = 'imageName';
+
   static const imageMap = 'ImageMap';
 
   static const imageMapEnglish = 'english';

@@ -7,17 +7,4 @@ class FirebaseStorageFolders {
   static const birdsFolder = 'Birds';
   static const mammalFolder = 'Mammal';
   static const reptileFolder = 'Reptile';
-
-  static const folderStructure = {
-    faunaFolder: [
-      reptileFolder,
-      mammalFolder,
-      birdsFolder,
-    ],
-    floraFolder: [
-      grassFolder,
-      shrubFolder,
-      treeFolder,
-    ],
-  };
 }

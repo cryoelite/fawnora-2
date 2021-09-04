@@ -5,9 +5,26 @@ import 'package:fawnora/services/ScreenConstraintService.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 class AboutWidget extends ConsumerWidget {
   const AboutWidget({Key? key}) : super(key: key);
+
+  Future<void> _showDialog(BuildContext context) async {
+    final pkgInfo = await PackageInfo.fromPlatform();
+    final version = pkgInfo.version;
+
+    showAboutDialog(
+      context: context,
+      applicationIcon: Image.asset(
+        ImageAssets.launcherIcon,
+        width: ScreenConstraintService(context).minWidth * 5,
+        height: ScreenConstraintService(context).minHeight * 5,
+      ),
+      applicationName: 'Fawnora',
+      applicationVersion: version,
+    );
+  }
 
   @override
   Widget build(BuildContext context, ScopedReader watch) {
@@ -16,17 +33,8 @@ class AboutWidget extends ConsumerWidget {
       style: ButtonStyle(
         splashFactory: NoSplash.splashFactory,
       ),
-      onPressed: () {
-        showAboutDialog(
-          context: context,
-          applicationIcon: Image.asset(
-            ImageAssets.launcherIcon,
-            width: ScreenConstraintService(context).minWidth * 5,
-            height: ScreenConstraintService(context).minHeight * 5,
-          ),
-          applicationName: 'Fawnora',
-          applicationVersion: '1.0.0',
-        );
+      onPressed: () async {
+        await _showDialog(context);
       },
       child: Container(
         height: ScreenConstraintService(context).minHeight * 3,

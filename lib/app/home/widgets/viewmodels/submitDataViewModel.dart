@@ -2,10 +2,12 @@ import 'package:fawnora/app/home/widgets/AssistiveAdd/viewmodels/selectionStatus
 import 'package:fawnora/app/home/widgets/DropDown/viewmodels/DropDownViewModel.dart';
 import 'package:fawnora/app/home/widgets/googleMaps/viewmodels/GoogleMapViewModel.dart';
 import 'package:fawnora/common_widgets/viewmodels/ButtonIconViewModel.dart';
+import 'package:fawnora/constants/FirestoreDocuments.dart';
 import 'package:fawnora/locale/LocaleConfig.dart';
 import 'package:fawnora/models/LocaleTypeEnum.dart';
 import 'package:fawnora/models/UserDataModel.dart';
 import 'package:fawnora/services/FirestoreService.dart';
+import 'package:fawnora/services/LocalStorageService.dart';
 import 'package:fawnora/services/ReverseGeocodingService.dart';
 import 'package:fawnora/services/TransectService.dart';
 import 'package:fawnora/services/UserService.dart';
@@ -50,17 +52,23 @@ class SubmitDataViewModel extends StateNotifier<bool> {
       final locMap = await ReverseGeocodingService()
           .findDistrict(location.latitude, location.longitude);
       final currentDateTIme = DateTime.now();
+
+      String? imageName =
+          await _getImageName(watchLocale.localeType, watchdropdown);
+
       final userDataModel = UserDataModel(
-          watchUserModel.username,
-          watchdropdown,
-          watchSpecie.name,
-          watchSubSpecie.name,
-          location,
-          locMap.value,
-          locMap.key,
-          currentDateTIme,
-          watchTransect,
-          language);
+        watchUserModel.username,
+        watchdropdown,
+        watchSpecie.name,
+        watchSubSpecie.name,
+        location,
+        locMap.value,
+        locMap.key,
+        currentDateTIme,
+        watchTransect,
+        language,
+        imageName,
+      );
       await _providerReference
           .read(firestoreProvider)
           .submitData(userDataModel);
@@ -70,6 +78,26 @@ class SubmitDataViewModel extends StateNotifier<bool> {
     }
     state = false;
     return watchLocale.submissionFailure;
+  }
+
+  Future<String?> _getImageName(LocaleType localeType, String specie) async {
+    String? imageName;
+    final imageMap =
+        await _providerReference.read(localStorageProvider).retrieveImageMap();
+    for (final e in imageMap.entries) {
+      if (localeType == LocaleType.HINDI) {
+        if (e.value?[FirestoreDocumentsAndFields.imageMapHindi] == specie) {
+          imageName = e.key;
+          break;
+        }
+      } else {
+        if (e.value?[FirestoreDocumentsAndFields.imageMapEnglish] == specie) {
+          imageName = e.key;
+          break;
+        }
+      }
+    }
+    return imageName;
   }
 
   Future<String> assistiveAddSubmit() async {
@@ -96,6 +124,8 @@ class SubmitDataViewModel extends StateNotifier<bool> {
       final locMap = await ReverseGeocodingService()
           .findDistrict(location.latitude, location.longitude);
       final currentDateTIme = DateTime.now();
+      final String? imageName =
+          await _getImageName(watchLocale.localeType, watchAssistive.name);
       final userDataModel = UserDataModel(
         watchUserModel.username,
         watchAssistive.name,
@@ -107,6 +137,7 @@ class SubmitDataViewModel extends StateNotifier<bool> {
         currentDateTIme,
         watchTransect,
         language,
+        imageName,
       );
       await _providerReference
           .read(firestoreProvider)

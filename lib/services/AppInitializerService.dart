@@ -48,10 +48,13 @@ class AppInitializerService {
     final Map<Permission, PermissionStatus> statuses = await [
       Permission.location,
       Permission.accessMediaLocation,
-      Permission.manageExternalStorage,
     ].request();
     if (statuses.values.any(
-      (value) => value.isDenied,
+      (value) {
+        dev.log(
+            "$_className: The permission ${value.index} is granted?  ${value.isGranted}");
+        return value.isDenied;
+      },
     )) {
       dev.log("$_className: Inadequate Permissions granted", level: 1000);
 

@@ -11,17 +11,18 @@ class UserDataModel {
   final String city;
   final String state;
   final String language;
+  final String? imageName;
 
   const UserDataModel(
-    this.username,
-    this.specie,
-    this.specieType,
-    this.subSpecie,
-    this.location,
-    this.city,
-    this.state,
-    this.dateTime,
-    this.transect,
-    this.language,
-  );
+      this.username,
+      this.specie,
+      this.specieType,
+      this.subSpecie,
+      this.location,
+      this.city,
+      this.state,
+      this.dateTime,
+      this.transect,
+      this.language,
+      this.imageName);
 }

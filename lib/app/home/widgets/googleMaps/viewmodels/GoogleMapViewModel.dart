@@ -13,7 +13,7 @@ class GoogleMapViewModel extends StateNotifier<LatLng?> {
   GoogleMapViewModel() : super(null);
 
   void init() {
-    timer = Timer.periodic(Duration(seconds: 30), (timer) {
+    timer = Timer.periodic(Duration(seconds: 5), (timer) {
       startLocationUpdateOnTimer();
     });
   }

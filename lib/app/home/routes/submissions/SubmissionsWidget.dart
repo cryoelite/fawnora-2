@@ -4,6 +4,7 @@ import 'package:fawnora/app/home/routes/submissions/viewmodels/SubmissionsViewMo
 import 'package:fawnora/constants/AppColors.dart';
 import 'package:fawnora/constants/ImageAssets.dart';
 import 'package:fawnora/locale/LocaleConfig.dart';
+import 'package:fawnora/locale/hindi/hindiLocaleConstraints.dart';
 import 'package:fawnora/models/SpecieTypeEnum.dart';
 import 'package:fawnora/models/UserDataModel.dart';
 import 'package:fawnora/services/ScreenConstraintService.dart';
@@ -129,7 +130,16 @@ class SubmissionsWidget extends ConsumerWidget {
       }
     }
     if (asset == null) {
-      asset = ImageAssets.bookIcon;
+      final hindi = HindiLocaleConstraints();
+      if (specieType == hindi.disturbance) {
+        asset = ImageAssets.disturbanceIcon;
+      } else if (specieType == hindi.flora) {
+        asset = ImageAssets.floraIcon;
+      } else if (specieType == hindi.fauna) {
+        asset = ImageAssets.faunaIcon;
+      } else {
+        asset = ImageAssets.floraIcon;
+      }
     }
     return asset;
   }

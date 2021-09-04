@@ -135,7 +135,7 @@ class FirestoreService {
       final data = elem.data();
       final Map<String, List<String>> convData = {};
       convData.addAll(data.map((key, value) {
-        final convKey = key.toString();
+        final convKey = key.toString().trim();
         if (value is List && value.isNotEmpty) {
           final convList = value.map((e) => e.toString()).toList();
           return MapEntry(convKey, convList);
@@ -217,8 +217,10 @@ class FirestoreService {
       entryNo = (intVal + 1).toString();
     }
     dynamic docVals = docData.data()?[FirestoreDocumentsAndFields.userEntries];
-    if (docVals == null) {
-      docVals = Map<String, Map<String, Object>>();
+    if (docVals == null ||
+        !(docVals is Map) ||
+        (docVals is Map && docVals.isEmpty)) {
+      docVals = Map<String, Map<String, Object?>>();
     }
 
     final storedData = docVals;
@@ -232,6 +234,7 @@ class FirestoreService {
       FirestoreDocumentsAndFields.userTime: userDataModel.dateTime,
       FirestoreDocumentsAndFields.userTransect: userDataModel.transect,
       FirestoreDocumentsAndFields.userEntryLanguage: userDataModel.language,
+      FirestoreDocumentsAndFields.userImageName: userDataModel.imageName,
     };
     storedData[entryNo] = specieData;
 
@@ -367,6 +370,7 @@ class FirestoreService {
                   convTimeData,
                   userTransect,
                   userLanguage.toString(),
+                  null,
                 );
                 listData.add(userModel);
               }
@@ -382,3 +386,122 @@ class FirestoreService {
     return listData;
   }
 }
+
+
+//Methods for alternative storage of entries
+/*Future<List<UserDataModel>?> getSubmissionData(String username) async {
+    dev.log("$_className: Getting user data", level: 800);
+    final docs = await _firestoreInstance
+        .collection(FirestoreCollections.userDataCollection)
+        .get();
+    final List<UserDataModel> listData = [];
+    if (docs.docs.isNotEmpty) {
+      for (final elem in docs.docs) {
+        final elemString = elem.id.split(_seperatingCharacter);
+
+        if (elemString[2] == username) {
+          final elemData = elem.data();
+
+          for (final data in elemData.entries) {
+            final docData = data.value;
+            if (docData?[FirestoreDocumentsAndFields.userLocation] != null) {
+              GeoPoint userLocation =
+                  docData[FirestoreDocumentsAndFields.userLocation];
+              final convUserLocation =
+                  LatLng(userLocation.latitude, userLocation.longitude);
+              final userSpecie =
+                  docData[FirestoreDocumentsAndFields.userSpecie];
+              final userSpecieType =
+                  docData[FirestoreDocumentsAndFields.userSpecieType];
+              final userSubSpecie =
+                  docData[FirestoreDocumentsAndFields.userSpecieType];
+              Timestamp timeData =
+                  docData[FirestoreDocumentsAndFields.userTime] ??
+                      Timestamp.now();
+              final convTimeData = timeData.toDate();
+              int userTransect =
+                  docData[FirestoreDocumentsAndFields.userTransect] ?? 1;
+              final userLanguage =
+                  docData[FirestoreDocumentsAndFields.userEntryLanguage];
+              final city = elemString[1];
+              final state = elemString[0];
+
+              if (userSpecie != null &&
+                  userSpecieType != null &&
+                  userSubSpecie != null) {
+                final userModel = UserDataModel(
+                  username,
+                  userSpecie.toString(),
+                  userSpecieType.toString(),
+                  userSubSpecie.toString(),
+                  convUserLocation,
+                  city,
+                  state,
+                  convTimeData,
+                  userTransect,
+                  userLanguage.toString(),
+                  null,
+                );
+                listData.add(userModel);
+              }
+            }
+          }
+        }
+      }
+    } else {
+      return null;
+    }
+
+    dev.log("$_className: Getting user data complete", level: 800);
+    return listData;
+  }
+
+
+  Future<void> submitData(UserDataModel userDataModel) async {
+    dev.log("$_className: Submitting specie data", level: 800);
+
+    final path =
+        "${FirestoreCollections.userDataCollection}/${userDataModel.state}$_seperatingCharacter${userDataModel.city}$_seperatingCharacter${userDataModel.username}";
+    String entryNo = '1';
+    final entryCountPath =
+        "${FirestoreCollections.userMetaDataCollection}/${userDataModel.username}";
+    final metaDataDoc = await _firestoreInstance.doc(entryCountPath).get();
+    final entryData =
+        metaDataDoc.data()?[FirestoreDocumentsAndFields.userTotalEntries];
+    if (entryData != null) {
+      final intVal = int.tryParse(entryData) ?? 0;
+      entryNo = (intVal + 1).toString();
+    }
+
+    final specieData = {
+      FirestoreDocumentsAndFields.userLocation: GeoPoint(
+          userDataModel.location.latitude, userDataModel.location.longitude),
+      FirestoreDocumentsAndFields.userSpecie: userDataModel.specie,
+      FirestoreDocumentsAndFields.userSpecieType: userDataModel.specieType,
+      FirestoreDocumentsAndFields.userSubSpecie: userDataModel.subSpecie,
+      FirestoreDocumentsAndFields.userTime: userDataModel.dateTime,
+      FirestoreDocumentsAndFields.userTransect: userDataModel.transect,
+      FirestoreDocumentsAndFields.userEntryLanguage: userDataModel.language,
+      FirestoreDocumentsAndFields.userImageName: userDataModel.imageName,
+    };
+
+    await _firestoreInstance.doc(path).set(
+        {
+          entryNo: specieData,
+        },
+        SetOptions(
+          merge: true,
+        ));
+
+    await _firestoreInstance.doc(entryCountPath).set(
+        {
+          FirestoreDocumentsAndFields.userTotalEntries: entryNo,
+        },
+        SetOptions(
+          merge: true,
+        ));
+
+    dev.log("$_className: Submitting specie data complete", level: 800);
+  }
+
+  */
