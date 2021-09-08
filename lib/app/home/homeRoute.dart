@@ -11,6 +11,7 @@ import 'package:fawnora/app/home/viewmodels/homeViewModel.dart';
 import 'package:fawnora/app/home/widgets/AssistiveAdd/viewmodels/selectionStatusViewModel.dart';
 import 'package:fawnora/app/home/widgets/DropDown/viewmodels/DropDownViewModel.dart';
 import 'package:fawnora/app/home/widgets/anim/CenterButton.dart';
+import 'package:fawnora/app/home/widgets/viewmodels/keyboardStatusViewModel.dart';
 import 'package:fawnora/app/home/widgets/viewmodels/submitDataViewModel.dart';
 import 'package:fawnora/common_widgets/ShowSnackBar.dart';
 import 'package:fawnora/common_widgets/viewmodels/ButtonIconViewModel.dart';
@@ -114,18 +115,26 @@ class HomeRoute extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = SystemOverlayOverrides.systemOverlayOverrides;
     SystemChrome.setSystemUIOverlayStyle(theme);
-
     return WillPopScope(
       onWillPop: () async {
         return _onWillPop(context);
       },
       child: Scaffold(
-        resizeToAvoidBottomInset: false,
-        floatingActionButton: FloatingActionButton(
-          onPressed: () async {
-            await changeButtonState(context);
-          },
+        floatingActionButton: Consumer(
           child: CenterButton(),
+          builder: (context, watch, child) {
+            final watchKeyboard = watch(keyBoardStatusProvider);
+            if (watchKeyboard) {
+              return ClipOval();
+            } else {
+              return FloatingActionButton(
+                onPressed: () async {
+                  await changeButtonState(context);
+                },
+                child: watchKeyboard ? Container() : child,
+              );
+            }
+          },
         ),
         floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
         bottomNavigationBar: Consumer(builder: (context, watch, _) {

@@ -19,6 +19,8 @@ class SearchBar extends StatelessWidget {
       return Container(
         width: ScreenConstraintService(context).getConvertedWidth(250),
         child: FloatingSearchBar(
+          backgroundColor: AppColors.color8,
+          backdropColor: Colors.transparent,
           onQueryChanged: (val) {
             if (val.isEmpty) {
               context.read(searchBarProvider.notifier).newState = null;
@@ -38,24 +40,28 @@ class SearchBar extends StatelessWidget {
             FloatingSearchBarAction(
               showIfOpened: false,
               child: CircularButton(
-                icon: const Icon(Icons.search),
+                icon: const Icon(
+                  Icons.search,
+                  color: AppColors.color7,
+                ),
                 onPressed: () {},
               ),
             ),
             FloatingSearchBarAction.searchToClear(
               showIfClosed: false,
+              color: AppColors.color7,
             ),
           ],
           hint: watchLocale.searchSpecie,
           hintStyle: TextStyle(
-            color: AppColors.color8,
+            color: AppColors.color7,
             fontSize: ScreenConstraintService(context).minHeight * 1.2,
             fontFamily: GoogleFonts.sourceSansPro().fontFamily,
             fontWeight: FontWeight.w500,
           ),
           queryStyle: TextStyle(
-            color: AppColors.color8,
-            fontSize: ScreenConstraintService(context).minHeight * 1.5,
+            color: AppColors.color7,
+            fontSize: ScreenConstraintService(context).minHeight * 1.2,
             fontFamily: GoogleFonts.sourceSansPro().fontFamily,
           ),
           builder: (context, transition) {

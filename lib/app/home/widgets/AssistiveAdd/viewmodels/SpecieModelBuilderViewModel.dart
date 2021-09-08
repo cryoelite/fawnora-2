@@ -17,7 +17,6 @@ final specieModelBuilderProvider =
   final watchLocalStorage = ref.read(localStorageProvider);
   final watchSpecieIconId = ref.read(activeFinalSpecieIconIdProvider.notifier);
   final watchLocale = ref.watch(localeTypeProvider);
-  print("locale changed");
   return SpecieModelBuilderViewModel(
     watchLocalStorage,
     watchSpecieIconId,

@@ -32,7 +32,6 @@ class LocaleTypeConfig extends StateNotifier<LocaleType> {
   LocaleTypeConfig(LocaleType value) : super(value);
 
   set updateState(LocaleType value) {
-    print("locale changing");
     state = value;
   }
 

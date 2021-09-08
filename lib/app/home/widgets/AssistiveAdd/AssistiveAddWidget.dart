@@ -7,6 +7,7 @@ import 'package:fawnora/locale/LocaleConfig.dart';
 import 'package:fawnora/models/SpecieModel.dart';
 
 import 'package:fawnora/services/ScreenConstraintService.dart';
+import 'package:fawnora/services/StringSimilarityCalculator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -37,11 +38,15 @@ class AssistiveAddWidget extends StatelessWidget {
   }
 
   bool _isItemFound(SpecieModel item, String query) {
-    if (item.name.toLowerCase().contains(query)) {
+    if (StringSimilarityCalculator(query, item.name).alikeness <= 0.5) {
       return true;
-    } else if (item.specieType.toString().toLowerCase().contains(query)) {
+    } else if (StringSimilarityCalculator(query, item.specieType.toString())
+            .alikeness <=
+        0.5) {
       return true;
-    } else if (item.subSpecie.toString().toLowerCase().contains(query)) {
+    } else if (StringSimilarityCalculator(query, item.subSpecie.toString())
+            .alikeness <=
+        0.5) {
       return true;
     } else {
       return false;
@@ -74,47 +79,53 @@ class AssistiveAddWidget extends StatelessWidget {
     return Container(
       height: ScreenConstraintService(context).minHeight * 42,
       width: ScreenConstraintService(context).maxWidth,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Stack(
         children: [
-          Padding(
-            padding: EdgeInsets.all(
-              ScreenConstraintService(context).minHeight,
-            ),
-            child: Container(
-              width: ScreenConstraintService(context).maxWidth,
-              height: ScreenConstraintService(context).minHeight * 3,
-              child: SearchBar(),
+          Align(
+            alignment: Alignment.topCenter,
+            child: Padding(
+              padding: EdgeInsets.all(
+                ScreenConstraintService(context).minHeight,
+              ),
+              child: Container(
+                width: ScreenConstraintService(context).maxWidth,
+                height: ScreenConstraintService(context).minHeight * 3,
+                child: SearchBar(),
+              ),
             ),
           ),
-          Consumer(builder: (context, watch, child) {
-            final watchSearch = watch(specieModelBuilderProvider);
-            return FutureBuilder(
-              future:
-                  context.read(specieModelBuilderProvider.notifier).initList(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.done) {
-                  final watchQueryString = watch(searchBarProvider);
-                  final items = _getSearchQueryItems(
-                    context,
-                    watchQueryString,
-                    watchSearch,
-                  );
-                  final watchLocale = watch(localeConfigProvider);
-                  if (items == null) {
-                    return _noResultFound(
+          Align(
+            alignment: Alignment(0, 1),
+            child: Consumer(builder: (context, watch, child) {
+              final watchSearch = watch(specieModelBuilderProvider);
+              return FutureBuilder(
+                future: context
+                    .read(specieModelBuilderProvider.notifier)
+                    .initList(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.done) {
+                    final watchQueryString = watch(searchBarProvider);
+                    final items = _getSearchQueryItems(
                       context,
-                      watchLocale.itemNotFound(watchQueryString ?? ""),
+                      watchQueryString,
+                      watchSearch,
                     );
+                    final watchLocale = watch(localeConfigProvider);
+                    if (items == null) {
+                      return _noResultFound(
+                        context,
+                        watchLocale.itemNotFound(watchQueryString ?? ""),
+                      );
+                    } else {
+                      return GridViewBuilder(items);
+                    }
                   } else {
-                    return GridViewBuilder(items);
+                    return Container();
                   }
-                } else {
-                  return Container();
-                }
-              },
-            );
-          }),
+                },
+              );
+            }),
+          ),
           /* Align(
             alignment: Alignment(
               0,

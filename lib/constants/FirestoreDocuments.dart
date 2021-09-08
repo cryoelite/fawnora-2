@@ -26,6 +26,8 @@ class FirestoreDocumentsAndFields {
   static const userTransect = 'transect';
   static const userEntryLanguage = 'language';
   static const userImageName = 'imageName';
+  static const userCity = 'District';
+  static const userState = 'State';
 
   static const imageMap = 'ImageMap';
 

@@ -235,7 +235,10 @@ class FirestoreService {
       FirestoreDocumentsAndFields.userTransect: userDataModel.transect,
       FirestoreDocumentsAndFields.userEntryLanguage: userDataModel.language,
       FirestoreDocumentsAndFields.userImageName: userDataModel.imageName,
+      FirestoreDocumentsAndFields.userCity: userDataModel.city,
+      FirestoreDocumentsAndFields.userState: userDataModel.state,
     };
+
     storedData[entryNo] = specieData;
 
     await _firestoreInstance.doc(path).set({

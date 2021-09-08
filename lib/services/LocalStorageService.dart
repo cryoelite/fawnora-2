@@ -18,8 +18,34 @@ final localStorageProvider = Provider<LocalStorageService>((_) {
 
 class LocalStorageService {
   final String _className = 'LocalStorage';
-  final String _tempFileSuffix = 'TEMP%';
+  final String _tempFilePrefix = 'TEMP%';
   final _dataSanitizer = DataSanitizerService();
+
+  /* Future<void> testFunc() async {
+    final dir = await getTemporaryDirectory();
+    final filedir = Directory('${dir.path}/${LocalStoragePaths.imageData}/');
+    final List<String> items = [];
+    final files = filedir.listSync();
+    for (var file in files) {
+      final filePath = file.path.split('/');
+      final fileName = filePath[filePath.length - 1];
+      final convFilename = fileName.substring(0,fileName)
+      items.add(_dataSanitizer.decodeString());
+    }
+
+    final imageMap = await retrieveImageMap();
+    for (var entry in imageMap.entries) {
+      if (entry.value != null)
+        for (var specie in entry.value!.entries) {
+          print(
+              "Filename: ${entry.key} language:${specie.key} and value:${specie.value}");
+        }
+    }
+
+    for (var item in items) {
+      print("Stored filename: $item");
+    }
+  } */
 
   Future<void> storeLoginCredentials(String username, String password) async {
     dev.log('$_className: Storing Login data', level: 800);
@@ -277,7 +303,8 @@ class LocalStorageService {
   }
 
   Future<void> resetLocalDbFirestore() async {
-    dev.log('$_className: Resetting local boxes for local firestore data', level: 800);
+    dev.log('$_className: Resetting local boxes for local firestore data',
+        level: 800);
 
     for (var value in SpecieType.values) {
       final box = await _getSubSpecieBox(value);
@@ -292,7 +319,8 @@ class LocalStorageService {
     await box3.clear();
     await box3.close();
 
-    dev.log('$_className: Resetting local boxes for local firestore complete', level: 800);
+    dev.log('$_className: Resetting local boxes for local firestore complete',
+        level: 800);
   }
 
   Future<void> resetLocalDbImageStorage() async {
@@ -342,7 +370,7 @@ class LocalStorageService {
     final dir = await getTemporaryDirectory();
     final fileList = dir.list();
     await _fileIterator(fileList,
-        optionalSuffix: _tempFileSuffix, includeOptionalSuffixAtStart: false);
+        optionalSuffix: _tempFilePrefix, includeOptionalSuffixAtStart: false);
     dev.log('$_className: Clearing normal images complete', level: 800);
   }
 
@@ -351,7 +379,7 @@ class LocalStorageService {
     final dir = await getTemporaryDirectory();
     final fileList = dir.list();
     await _fileIterator(fileList,
-        optionalSuffix: _tempFileSuffix, includeOptionalSuffixAtStart: true);
+        optionalSuffix: _tempFilePrefix, includeOptionalSuffixAtStart: true);
     dev.log('$_className: Clearing cache images complete', level: 800);
   }
 
@@ -421,9 +449,8 @@ class LocalStorageService {
 
   Future<void> storeCacheImage(Uint8List imageData, String filename) async {
     dev.log('$_className: Storing Image in cache', level: 800);
-    print("filename is $filename");
     final convFilename =
-        _tempFileSuffix + _dataSanitizer.encodeString(filename);
+        _tempFilePrefix + _dataSanitizer.encodeString(filename);
     final file = await _getPath(convFilename);
     await file.create(recursive: true);
     await file.writeAsBytes(imageData);
@@ -453,8 +480,9 @@ class LocalStorageService {
 
   Future<Uint8List?> retrieveCacheImage(String filename) async {
     dev.log('$_className: Retrieving Image from cache', level: 800);
+
     final convFilename =
-        _tempFileSuffix + _dataSanitizer.encodeString(filename);
+        _tempFilePrefix + _dataSanitizer.encodeString(filename);
     final file = await _getPath(convFilename);
     Uint8List data;
     if (await file.exists()) {
