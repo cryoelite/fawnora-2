@@ -9,7 +9,7 @@
 .history
 .svn/
 /android/app/google-services.json
-/android/app/Android/src/main/AndroidManifest.xml
+/android/app/src/main/AndroidManifest.xml
 
 # IntelliJ related
 *.iml
