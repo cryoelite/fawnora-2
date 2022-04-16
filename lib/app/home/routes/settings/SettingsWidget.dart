@@ -20,6 +20,7 @@ class SettingsWidget extends StatelessWidget {
           LanguageWidget(),
           AboutWidget(),
           SignOutWidget(),
+     
         ],
       ),
     );

@@ -30,6 +30,24 @@ class FirebaseStorageService {
   final FirebaseStorage _instance;
   const FirebaseStorageService(this._instance, this._localStorageService);
 
+  Future<List<String>> getImageNames() async {
+    dev.log("$_className: Getting All ImageNames", level: 800);
+
+    final list = <String>[];
+    final _path = '/Species/';
+    final _refData = await _instance.ref(_path).list();
+    for (final image in _refData.items) {
+      final name = image.name;
+      if (_fileTypeChecker(name)) {
+        list.add(name);
+      }
+    }
+
+    dev.log("$_className: Getting All ImageNames complete", level: 800);
+
+    return list;
+  }
+
   Future<Map<String, Uint8List>> getAllImages() async {
     dev.log("$_className: Getting All Images", level: 800);
 

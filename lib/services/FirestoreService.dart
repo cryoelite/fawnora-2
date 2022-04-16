@@ -388,6 +388,47 @@ class FirestoreService {
     dev.log("$_className: Getting user data complete", level: 800);
     return listData;
   }
+
+  /* Future<void> englishNameImageListFiller(
+      List<String> imageNames, List<String> specieNamesEnglish) async {
+    final Map<String, Map<String, String>> entryData = {};
+    for (var elem in imageNames) {
+      Map<String, double> matchList = {};
+      for (var specie in specieNamesEnglish) {
+        final score = StringSimilarityCalculator(elem, specie).alikeness;
+        matchList[specie] = score;
+      }
+      final leastScoreList = matchList.entries.toList()
+        ..sort(
+          (MapEntry<String, double> first, MapEntry<String, double> second) {
+            if (first.value > second.value) {
+              return 1;
+            } else if (first.value < second.value) {
+              return -1;
+            } else {
+              return 0;
+            }
+          },
+        );
+      final leastScoreValue = leastScoreList.first.key;
+      final Map<String, String> entry = {};
+      entry[FirestoreDocumentsAndFields.imageMapEnglish] = leastScoreValue;
+      entryData[elem] = entry;
+    }
+
+    for (final entry in entryData.entries) {
+      await _firestoreInstance
+          .collection(FirestoreCollections.imageDataCollection)
+          .doc(FirestoreDocumentsAndFields.imageMap)
+          .set(
+              {
+            entry.key: entry.value,
+          },
+              SetOptions(
+                merge: true,
+              ));
+    }
+  } */
 }
 
 

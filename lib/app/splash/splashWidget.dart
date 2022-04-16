@@ -16,6 +16,7 @@ class _SplashWidgetState extends State<SplashWidget> {
   @override
   Widget build(BuildContext context) {
     return Stack(
+      
       children: <Widget>[
         Positioned(
           child: Container(
